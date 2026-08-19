@@ -200,3 +200,30 @@ describe('drops', () => {
     }
   });
 });
+
+describe('drink colliders', () => {
+  it('uses a box/capsule rather than a circle for ice and bottles', () => {
+    const engine = new MergeEngine();
+    engine.setThemeId('drinks');
+    const ice = engine.spawn(0, 180, 450);
+    const bottle = engine.spawn(10, 90, 380);
+    expect(ice.circleRadius).toBeFalsy();
+    expect(bottle.circleRadius).toBeFalsy();
+    const iceW = ice.bounds.max.x - ice.bounds.min.x;
+    const iceH = ice.bounds.max.y - ice.bounds.min.y;
+    expect(iceW / iceH).toBeGreaterThan(0.7);
+    const bottleW = bottle.bounds.max.x - bottle.bounds.min.x;
+    const bottleH = bottle.bounds.max.y - bottle.bounds.min.y;
+    expect(bottleW).toBeLessThan(bottleH * 0.85);
+  });
+
+  it('still merges identical drink objects', () => {
+    const engine = new MergeEngine({ random: () => 0 });
+    engine.setThemeId('drinks');
+    engine.spawn(0, 180, 470);
+    engine.spawn(0, 184, 430);
+    step(engine, 2500);
+    expect(engine.snapshot().levels.some((level) => level >= 1)).toBe(true);
+    expect(engine.score).toBeGreaterThanOrEqual(scoreForMerge(1));
+  });
+});

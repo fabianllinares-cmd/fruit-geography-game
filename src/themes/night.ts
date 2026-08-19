@@ -17,7 +17,7 @@ export const nightTheme: Theme = {
     '--accent': '#22d3ee',
     '--accent-2': '#e879f9',
     '--danger': '#fb7185',
-    '--stage': 'linear-gradient(180deg, #020617 0%, #1e1b4b 50%, #312e81 100%)',
+    '--stage': '#0b1020',
     '--hud': 'rgba(2, 6, 23, 0.88)',
     '--shadow': 'rgba(34, 211, 238, 0.18)',
     '--btn-text': '#042f2e',
@@ -64,9 +64,9 @@ export const nightTheme: Theme = {
       visual: { fill: '#84cc16', stroke: '#a3e635', highlight: '#d9f99d', style: 'night-fruit', glow: '#a3e635' },
     },
     {
-      id: 'peach',
-      name: 'Peach',
-      visual: { fill: '#fb7185', stroke: '#f9a8d4', highlight: '#fecdd3', style: 'night-fruit', glow: '#f9a8d4' },
+      id: 'plum',
+      name: 'Plum',
+      visual: { fill: '#a21caf', stroke: '#f9a8d4', highlight: '#f5d0fe', style: 'night-fruit', glow: '#e879f9' },
     },
     {
       id: 'pineapple',

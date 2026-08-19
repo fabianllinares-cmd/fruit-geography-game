@@ -1,4 +1,4 @@
-import { ASSET_MANIFEST, type ThemeId } from '../assets/catalog';
+import { themeSprites, type ThemeId } from '../assets/catalog';
 import { SCORES } from '../game/scoring';
 import { RADII, type ObjectDef, type VisualSpec } from './types';
 
@@ -10,7 +10,7 @@ export function buildObjects(
     visual: Omit<VisualSpec, 'sprite'>;
   }>,
 ): ObjectDef[] {
-  const mapped = ASSET_MANIFEST.themes[themeId];
+  const mapped = themeSprites(themeId);
   if (mapped.length !== entries.length) {
     throw new Error(`${themeId} must have ${mapped.length} objects, got ${entries.length}`);
   }

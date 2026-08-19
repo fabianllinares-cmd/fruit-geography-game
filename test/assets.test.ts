@@ -9,9 +9,14 @@ import {
   backgroundPath,
   buttonPath,
   effectPath,
+  themeSprites,
+  uiPath,
 } from '../src/assets/catalog';
+import { spriteDrawSize } from '../src/game/draw';
+import { SPRITE_VISUAL_SCALE, colliderFor } from '../src/game/colliders';
 import { THEMES } from '../src/themes';
 import { RADII } from '../src/themes/types';
+import { spriteFrame } from '../src/assets/sprite-frame';
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 
@@ -19,55 +24,89 @@ function publicFile(rel: string): string {
   return path.join(root, 'public', rel);
 }
 
-describe('production asset pack', () => {
-  it('includes 55 sprites, 5 backgrounds, 5 buttons and 6 effects', () => {
-    expect(ASSET_MANIFEST.counts.item_sprites).toBe(55);
-    expect(ASSET_MANIFEST.counts.backgrounds).toBe(5);
-    expect(ASSET_MANIFEST.counts.ui_buttons).toBe(5);
-    expect(ASSET_MANIFEST.counts.effects).toBe(6);
-    expect(allAssetPaths()).toHaveLength(71);
+describe('V2 production asset pack', () => {
+  it('maps 55 sprites, 5 native backgrounds and the supplied UI icons', () => {
+    expect(ASSET_MANIFEST.version).toBe('2.0');
+    expect(allAssetPaths().filter((file) => file.startsWith('sprites/'))).toHaveLength(55);
+    expect(Object.keys(ASSET_MANIFEST.backgrounds)).toHaveLength(5);
+    expect(Object.keys(ASSET_MANIFEST.ui)).toHaveLength(6);
+    for (const file of allAssetPaths()) {
+      expect(existsSync(publicFile(file)), file).toBe(true);
+    }
   });
 
-  it('maps every theme level 1-11 to the matching PNG on disk', () => {
+  it('maps every theme level 1-11 to the matching V2 PNG on disk', () => {
     for (const themeId of THEME_IDS) {
-      const rows = ASSET_MANIFEST.themes[themeId];
+      const rows = themeSprites(themeId);
       expect(rows).toHaveLength(11);
       rows.forEach((row, index) => {
         expect(row.level).toBe(index + 1);
         expect(existsSync(publicFile(row.file)), row.file).toBe(true);
+        expect(spriteFrame(row.file)?.sw).toBeGreaterThan(100);
+        expect(spriteFrame(row.file)?.sh).toBeGreaterThan(100);
       });
       expect(existsSync(publicFile(backgroundPath(themeId))), backgroundPath(themeId)).toBe(true);
     }
   });
 
-  it('keeps theme object ids aligned with the manifest and existing physics radii', () => {
+  it('keeps theme object ids aligned with the V2 manifest', () => {
     for (const theme of THEMES) {
-      const rows = ASSET_MANIFEST.themes[theme.id as (typeof THEME_IDS)[number]];
+      const rows = themeSprites(theme.id as (typeof THEME_IDS)[number]);
       expect(theme.objects).toHaveLength(11);
       theme.objects.forEach((object, index) => {
         expect(object.id).toBe(rows[index].id);
         expect(object.visual.sprite).toBe(rows[index].file);
         expect(object.radius).toBe(RADII[index]);
+        const drawn = spriteDrawSize(object);
+        expect(Math.max(drawn.width, drawn.height)).toBeCloseTo(object.radius * 2 * SPRITE_VISUAL_SCALE, 5);
       });
     }
   });
 
-  it('resolves all supplied UI and effect files', () => {
-    for (const id of ['play', 'pause', 'menu', 'sound_on', 'sound_off'] as const) {
-      expect(existsSync(publicFile(buttonPath(id))), buttonPath(id)).toBe(true);
+  it('resolves V2 UI icons and keeps sound glyphs available', () => {
+    for (const id of ['globe', 'target', 'menu', 'energy', 'play', 'sweep'] as const) {
+      expect(existsSync(publicFile(uiPath(id))), uiPath(id)).toBe(true);
     }
-    for (const id of ['globe', 'bubbles', 'target', 'map', 'energy', 'quiz'] as const) {
-      expect(existsSync(publicFile(effectPath(id))), effectPath(id)).toBe(true);
-    }
+    expect(existsSync(publicFile(buttonPath('play')))).toBe(true);
+    expect(existsSync(publicFile(buttonPath('menu')))).toBe(true);
+    expect(existsSync(publicFile(buttonPath('sound_on')))).toBe(true);
+    expect(existsSync(publicFile(buttonPath('sound_off')))).toBe(true);
+    expect(effectPath('bubbles')).toBe(uiPath('sweep'));
+    expect(effectPath('globe')).toBe(uiPath('globe'));
   });
 
-  it('starts Sports with the shuttlecock and Classic/Night with cherry', () => {
-    expect(ASSET_MANIFEST.themes.sports[0].id).toBe('shuttlecock');
-    expect(ASSET_MANIFEST.themes.classic.map((row) => row.id)).toEqual(
-      ASSET_MANIFEST.themes.night.map((row) => row.id),
-    );
-    expect(ASSET_MANIFEST.themes.classic[0].id).toBe('cherry');
-    expect(ASSET_MANIFEST.themes.drinks[10].id).toBe('bottle');
-    expect(ASSET_MANIFEST.themes.tropical[5].id).toBe('banana');
+  it('uses the V2 sports and drinks progressions', () => {
+    expect(themeSprites('sports').map((row) => row.id)).toEqual([
+      'shuttlecock',
+      'ping_pong_ball',
+      'tennis_ball',
+      'baseball',
+      'softball',
+      'eight_ball',
+      'volleyball',
+      'basketball',
+      'soccer_ball',
+      'american_football',
+      'trophy',
+    ]);
+    expect(themeSprites('night')[8].id).toBe('plum');
+    expect(themeSprites('drinks')[0].id).toBe('ice_cube');
+    expect(themeSprites('drinks')[10].id).toBe('bottle');
+    expect(themeSprites('tropical')[5].id).toBe('banana');
+  });
+
+  it('uses non-circular colliders for drinks and selected sports', () => {
+    expect(colliderFor('drinks', 0).kind).toBe('box');
+    expect(colliderFor('drinks', 1).kind).toBe('circle');
+    expect(colliderFor('drinks', 2).kind).toBe('rounded-box');
+    expect(colliderFor('drinks', 3).kind).toBe('stem-glass');
+    expect(colliderFor('drinks', 4).kind).toBe('stem-glass');
+    expect(colliderFor('drinks', 8).kind).toBe('rounded-box');
+    expect(colliderFor('drinks', 10).kind).toBe('capsule');
+    expect(colliderFor('drinks', 10).width).toBeLessThan(colliderFor('drinks', 10).height);
+    expect(colliderFor('drinks', 6).width).toBeLessThan(colliderFor('drinks', 6).height);
+    expect(colliderFor('sports', 0).kind).toBe('capsule');
+    expect(colliderFor('sports', 3).kind).toBe('circle');
+    expect(colliderFor('classic', 0).kind).toBe('circle');
   });
 });

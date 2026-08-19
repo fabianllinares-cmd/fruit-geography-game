@@ -1,0 +1,332 @@
+{
+  "sprites/classic/classic_01_cherry.png": {
+    "sx": 181,
+    "sy": 146,
+    "sw": 700,
+    "sh": 816
+  },
+  "sprites/classic/classic_02_strawberry.png": {
+    "sx": 189,
+    "sy": 62,
+    "sw": 646,
+    "sh": 900
+  },
+  "sprites/classic/classic_03_blueberry.png": {
+    "sx": 62,
+    "sy": 73,
+    "sw": 900,
+    "sh": 878
+  },
+  "sprites/classic/classic_04_grapes.png": {
+    "sx": 176,
+    "sy": 62,
+    "sw": 671,
+    "sh": 900
+  },
+  "sprites/classic/classic_05_lime.png": {
+    "sx": 83,
+    "sy": 62,
+    "sw": 858,
+    "sh": 900
+  },
+  "sprites/classic/classic_06_orange.png": {
+    "sx": 116,
+    "sy": 62,
+    "sw": 791,
+    "sh": 900
+  },
+  "sprites/classic/classic_07_apple.png": {
+    "sx": 138,
+    "sy": 62,
+    "sw": 748,
+    "sh": 900
+  },
+  "sprites/classic/classic_08_pear.png": {
+    "sx": 209,
+    "sy": 62,
+    "sw": 605,
+    "sh": 900
+  },
+  "sprites/classic/classic_09_peach.png": {
+    "sx": 112,
+    "sy": 62,
+    "sw": 800,
+    "sh": 900
+  },
+  "sprites/classic/classic_10_pineapple.png": {
+    "sx": 306,
+    "sy": 62,
+    "sw": 526,
+    "sh": 900
+  },
+  "sprites/classic/classic_11_watermelon.png": {
+    "sx": 116,
+    "sy": 62,
+    "sw": 792,
+    "sh": 899
+  },
+  "sprites/drinks/drinks_01_ice_cube.png": {
+    "sx": 136,
+    "sy": 62,
+    "sw": 752,
+    "sh": 900
+  },
+  "sprites/drinks/drinks_02_olive.png": {
+    "sx": 135,
+    "sy": 62,
+    "sw": 753,
+    "sh": 900
+  },
+  "sprites/drinks/drinks_03_shot_glass.png": {
+    "sx": 247,
+    "sy": 62,
+    "sw": 529,
+    "sh": 900
+  },
+  "sprites/drinks/drinks_04_wine_glass.png": {
+    "sx": 232,
+    "sy": 62,
+    "sw": 418,
+    "sh": 900
+  },
+  "sprites/drinks/drinks_05_martini.png": {
+    "sx": 197,
+    "sy": 62,
+    "sw": 625,
+    "sh": 900
+  },
+  "sprites/drinks/drinks_06_whiskey.png": {
+    "sx": 155,
+    "sy": 62,
+    "sw": 720,
+    "sh": 900
+  },
+  "sprites/drinks/drinks_07_blue_cocktail.png": {
+    "sx": 216,
+    "sy": 62,
+    "sw": 591,
+    "sh": 900
+  },
+  "sprites/drinks/drinks_08_margarita.png": {
+    "sx": 193,
+    "sy": 62,
+    "sw": 638,
+    "sh": 900
+  },
+  "sprites/drinks/drinks_09_mojito.png": {
+    "sx": 350,
+    "sy": 62,
+    "sw": 450,
+    "sh": 900
+  },
+  "sprites/drinks/drinks_10_champagne.png": {
+    "sx": 211,
+    "sy": 62,
+    "sw": 602,
+    "sh": 900
+  },
+  "sprites/drinks/drinks_11_bottle.png": {
+    "sx": 258,
+    "sy": 62,
+    "sw": 507,
+    "sh": 900
+  },
+  "sprites/night/night_01_cherry.png": {
+    "sx": 146,
+    "sy": 62,
+    "sw": 731,
+    "sh": 900
+  },
+  "sprites/night/night_02_strawberry.png": {
+    "sx": 181,
+    "sy": 62,
+    "sw": 662,
+    "sh": 900
+  },
+  "sprites/night/night_03_blueberry.png": {
+    "sx": 62,
+    "sy": 62,
+    "sw": 900,
+    "sh": 900
+  },
+  "sprites/night/night_04_grapes.png": {
+    "sx": 170,
+    "sy": 62,
+    "sw": 684,
+    "sh": 900
+  },
+  "sprites/night/night_05_lime.png": {
+    "sx": 67,
+    "sy": 62,
+    "sw": 890,
+    "sh": 900
+  },
+  "sprites/night/night_06_orange.png": {
+    "sx": 133,
+    "sy": 68,
+    "sw": 757,
+    "sh": 894
+  },
+  "sprites/night/night_07_apple.png": {
+    "sx": 146,
+    "sy": 62,
+    "sw": 732,
+    "sh": 900
+  },
+  "sprites/night/night_08_pear.png": {
+    "sx": 191,
+    "sy": 62,
+    "sw": 641,
+    "sh": 900
+  },
+  "sprites/night/night_09_plum.png": {
+    "sx": 126,
+    "sy": 62,
+    "sw": 772,
+    "sh": 900
+  },
+  "sprites/night/night_10_pineapple.png": {
+    "sx": 304,
+    "sy": 62,
+    "sw": 520,
+    "sh": 900
+  },
+  "sprites/night/night_11_watermelon.png": {
+    "sx": 116,
+    "sy": 62,
+    "sw": 792,
+    "sh": 899
+  },
+  "sprites/sports/sports_01_shuttlecock.png": {
+    "sx": 124,
+    "sy": 70,
+    "sw": 776,
+    "sh": 892
+  },
+  "sprites/sports/sports_02_ping_pong_ball.png": {
+    "sx": 67,
+    "sy": 62,
+    "sw": 889,
+    "sh": 900
+  },
+  "sprites/sports/sports_03_tennis_ball.png": {
+    "sx": 62,
+    "sy": 62,
+    "sw": 900,
+    "sh": 900
+  },
+  "sprites/sports/sports_04_baseball.png": {
+    "sx": 97,
+    "sy": 62,
+    "sw": 830,
+    "sh": 900
+  },
+  "sprites/sports/sports_05_softball.png": {
+    "sx": 89,
+    "sy": 62,
+    "sw": 846,
+    "sh": 900
+  },
+  "sprites/sports/sports_06_eight_ball.png": {
+    "sx": 119,
+    "sy": 62,
+    "sw": 785,
+    "sh": 900
+  },
+  "sprites/sports/sports_07_volleyball.png": {
+    "sx": 130,
+    "sy": 62,
+    "sw": 764,
+    "sh": 900
+  },
+  "sprites/sports/sports_08_basketball.png": {
+    "sx": 119,
+    "sy": 62,
+    "sw": 785,
+    "sh": 900
+  },
+  "sprites/sports/sports_09_soccer_ball.png": {
+    "sx": 197,
+    "sy": 62,
+    "sw": 722,
+    "sh": 900
+  },
+  "sprites/sports/sports_10_american_football.png": {
+    "sx": 256,
+    "sy": 62,
+    "sw": 663,
+    "sh": 900
+  },
+  "sprites/sports/sports_11_trophy.png": {
+    "sx": 233,
+    "sy": 62,
+    "sw": 648,
+    "sh": 900
+  },
+  "sprites/tropical/tropical_01_raspberry.png": {
+    "sx": 145,
+    "sy": 62,
+    "sw": 733,
+    "sh": 900
+  },
+  "sprites/tropical/tropical_02_starfruit.png": {
+    "sx": 93,
+    "sy": 62,
+    "sw": 838,
+    "sh": 900
+  },
+  "sprites/tropical/tropical_03_kiwi.png": {
+    "sx": 84,
+    "sy": 62,
+    "sw": 855,
+    "sh": 900
+  },
+  "sprites/tropical/tropical_04_passionfruit.png": {
+    "sx": 116,
+    "sy": 62,
+    "sw": 791,
+    "sh": 900
+  },
+  "sprites/tropical/tropical_05_mango.png": {
+    "sx": 196,
+    "sy": 62,
+    "sw": 685,
+    "sh": 900
+  },
+  "sprites/tropical/tropical_06_banana.png": {
+    "sx": 119,
+    "sy": 62,
+    "sw": 785,
+    "sh": 900
+  },
+  "sprites/tropical/tropical_07_dragonfruit.png": {
+    "sx": 145,
+    "sy": 62,
+    "sw": 734,
+    "sh": 900
+  },
+  "sprites/tropical/tropical_08_papaya.png": {
+    "sx": 130,
+    "sy": 62,
+    "sw": 764,
+    "sh": 900
+  },
+  "sprites/tropical/tropical_09_coconut.png": {
+    "sx": 129,
+    "sy": 62,
+    "sw": 766,
+    "sh": 900
+  },
+  "sprites/tropical/tropical_10_pineapple.png": {
+    "sx": 314,
+    "sy": 62,
+    "sw": 505,
+    "sh": 900
+  },
+  "sprites/tropical/tropical_11_watermelon.png": {
+    "sx": 136,
+    "sy": 62,
+    "sw": 751,
+    "sh": 900
+  }
+}
