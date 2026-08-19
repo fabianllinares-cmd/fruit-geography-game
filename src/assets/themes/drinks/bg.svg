@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1040" width="720" height="1040">
+<defs>
+      <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#3b1224"/>
+        <stop offset="55%" stop-color="#1c1016"/>
+        <stop offset="100%" stop-color="#140c10"/>
+      </linearGradient>
+      <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#5b3a2e"/>
+        <stop offset="100%" stop-color="#2a151c"/>
+      </linearGradient>
+    </defs>
+    <rect width="720" height="1040" fill="url(#bar)"/>
+    <g opacity=".35">
+      <rect x="40" y="40" width="70" height="160" rx="8" fill="#e8c07a"/>
+      <rect x="130" y="70" width="50" height="130" rx="8" fill="#fb7185"/>
+      <rect x="200" y="30" width="40" height="170" rx="8" fill="#fde68a"/>
+      <rect x="520" y="50" width="60" height="150" rx="8" fill="#86efac"/>
+      <rect x="600" y="80" width="70" height="120" rx="8" fill="#fda4af"/>
+    </g>
+    <rect y="240" width="720" height="800" fill="url(#wood)"/>
+    <rect y="260" width="720" height="2" fill="#000" opacity=".12"/><rect y="302" width="720" height="2" fill="#000" opacity=".12"/><rect y="344" width="720" height="2" fill="#000" opacity=".12"/><rect y="386" width="720" height="2" fill="#000" opacity=".12"/><rect y="428" width="720" height="2" fill="#000" opacity=".12"/><rect y="470" width="720" height="2" fill="#000" opacity=".12"/><rect y="512" width="720" height="2" fill="#000" opacity=".12"/><rect y="554" width="720" height="2" fill="#000" opacity=".12"/><rect y="596" width="720" height="2" fill="#000" opacity=".12"/><rect y="638" width="720" height="2" fill="#000" opacity=".12"/><rect y="680" width="720" height="2" fill="#000" opacity=".12"/><rect y="722" width="720" height="2" fill="#000" opacity=".12"/><rect y="764" width="720" height="2" fill="#000" opacity=".12"/><rect y="806" width="720" height="2" fill="#000" opacity=".12"/><rect y="848" width="720" height="2" fill="#000" opacity=".12"/><rect y="890" width="720" height="2" fill="#000" opacity=".12"/><rect y="932" width="720" height="2" fill="#000" opacity=".12"/><rect y="974" width="720" height="2" fill="#000" opacity=".12"/>
+</svg>

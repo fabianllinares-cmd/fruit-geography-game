@@ -1,3 +1,4 @@
+import { sportsArt, uiIcons } from '../assets';
 import { buildObjects } from './build';
 import type { Theme } from './types';
 
@@ -6,6 +7,8 @@ export const sportsTheme: Theme = {
   name: 'Sports Arena',
   shortName: 'Sports',
   emoji: '⚽',
+  icon: uiIcons.sports,
+  background: sportsArt.bg,
   tagline: 'Stadium lights and big plays',
   cssVars: {
     '--bg': '#052e16',
@@ -27,10 +30,11 @@ export const sportsTheme: Theme = {
       id: 'pingpong',
       name: 'Ping-pong ball',
       visual: {
+        src: sportsArt.pingpong,
         emoji: '🏓',
-        fill: '#f8fafc',
-        stroke: '#cbd5e1',
-        highlight: '#ffffff',
+        fill: '#f97316',
+        stroke: '#9a3412',
+        highlight: '#fdba74',
         style: 'ball',
         ball: 'pingpong',
       },
@@ -39,6 +43,7 @@ export const sportsTheme: Theme = {
       id: 'golf',
       name: 'Golf ball',
       visual: {
+        src: sportsArt.golf,
         emoji: '⛳',
         fill: '#f1f5f9',
         stroke: '#94a3b8',
@@ -49,23 +54,25 @@ export const sportsTheme: Theme = {
     },
     {
       id: 'pool',
-      name: 'Pool ball',
+      name: '8-ball',
       visual: {
+        src: sportsArt.eightball,
         emoji: '🎱',
-        fill: '#dc2626',
-        stroke: '#111827',
-        highlight: '#fca5a5',
+        fill: '#0f172a',
+        stroke: '#020617',
+        highlight: '#64748b',
         style: 'ball',
         ball: 'pool',
-        number: '3',
+        number: '8',
       },
     },
     {
       id: 'tennis',
       name: 'Tennis ball',
       visual: {
+        src: sportsArt.tennis,
         emoji: '🎾',
-        fill: '#d9f99d',
+        fill: '#a3e635',
         stroke: '#ffffff',
         highlight: '#ecfccb',
         style: 'ball',
@@ -76,6 +83,7 @@ export const sportsTheme: Theme = {
       id: 'baseball',
       name: 'Baseball',
       visual: {
+        src: sportsArt.baseball,
         emoji: '⚾',
         fill: '#fff7ed',
         stroke: '#ef4444',
@@ -85,13 +93,27 @@ export const sportsTheme: Theme = {
       },
     },
     {
-      id: 'handball',
-      name: 'Handball',
+      id: 'bowling',
+      name: 'Bowling ball',
       visual: {
-        emoji: '🤾',
-        fill: '#2563eb',
-        stroke: '#1e3a8a',
-        highlight: '#93c5fd',
+        src: sportsArt.bowling,
+        emoji: '🎳',
+        fill: '#7c3aed',
+        stroke: '#2e1065',
+        highlight: '#c4b5fd',
+        style: 'ball',
+        ball: 'bowling',
+      },
+    },
+    {
+      id: 'football',
+      name: 'American football',
+      visual: {
+        src: sportsArt.football,
+        emoji: '🏈',
+        fill: '#92400e',
+        stroke: '#451a03',
+        highlight: '#d6a07a',
         style: 'ball',
         ball: 'handball',
       },
@@ -100,6 +122,7 @@ export const sportsTheme: Theme = {
       id: 'volleyball',
       name: 'Volleyball',
       visual: {
+        src: sportsArt.volleyball,
         emoji: '🏐',
         fill: '#fff7ed',
         stroke: '#f97316',
@@ -109,21 +132,10 @@ export const sportsTheme: Theme = {
       },
     },
     {
-      id: 'soccer',
-      name: 'Football',
-      visual: {
-        emoji: '⚽',
-        fill: '#f8fafc',
-        stroke: '#111827',
-        highlight: '#e2e8f0',
-        style: 'ball',
-        ball: 'soccer',
-      },
-    },
-    {
       id: 'basketball',
       name: 'Basketball',
       visual: {
+        src: sportsArt.basketball,
         emoji: '🏀',
         fill: '#ea580c',
         stroke: '#111827',
@@ -133,21 +145,23 @@ export const sportsTheme: Theme = {
       },
     },
     {
-      id: 'bowling',
-      name: 'Bowling ball',
+      id: 'soccer',
+      name: 'Soccer ball',
       visual: {
-        emoji: '🎳',
-        fill: '#1e293b',
-        stroke: '#0f172a',
-        highlight: '#64748b',
+        src: sportsArt.soccer,
+        emoji: '⚽',
+        fill: '#f8fafc',
+        stroke: '#111827',
+        highlight: '#e2e8f0',
         style: 'ball',
-        ball: 'bowling',
+        ball: 'soccer',
       },
     },
     {
       id: 'championship',
       name: 'Championship ball',
       visual: {
+        src: sportsArt.trophy,
         emoji: '🏆',
         fill: '#eab308',
         stroke: '#854d0e',

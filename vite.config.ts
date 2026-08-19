@@ -4,6 +4,10 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   // Relative base so GitHub Pages (/fruit-geography-game/) and local preview both work.
   base: './',
+  build: {
+    // Keep theme art as real files so the service worker can cache them offline.
+    assetsInlineLimit: 0,
+  },
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
@@ -31,7 +35,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest,woff2}'],
         navigateFallback: 'index.html',
       },
     }),

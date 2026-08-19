@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs><radialGradient id="ps" cx="34%" cy="28%" r="78%">
+  <stop offset="0%" stop-color="#c4b5fd"/>
+  <stop offset="52%" stop-color="#7c3aed"/>
+  <stop offset="100%" stop-color="#4c1d95"/>
+</radialGradient>
+    <radialGradient id="pulp" cx="34%" cy="28%" r="78%">
+  <stop offset="0%" stop-color="#fdba74"/>
+  <stop offset="52%" stop-color="#f97316"/>
+  <stop offset="100%" stop-color="#c2410c"/>
+</radialGradient>
+  </defs>
+  <circle cx="128" cy="132" r="88" fill="url(#ps)" stroke="#4c1d95" stroke-width="3"/>
+  <circle cx="128" cy="132" r="54" fill="url(#pulp)"/>
+  <g fill="#1c1917">
+    <circle cx="146" cy="132" r="4"/><circle cx="142.56230589874906" cy="142.58013454126453" r="4"/><circle cx="133.56230589874906" cy="149.11901729331277" r="4"/><circle cx="122.43769410125094" cy="149.11901729331277" r="4"/><circle cx="113.43769410125094" cy="142.58013454126453" r="4"/><circle cx="110" cy="132" r="4"/><circle cx="113.43769410125094" cy="121.41986545873549" r="4"/><circle cx="122.43769410125094" cy="114.88098270668723" r="4"/><circle cx="133.56230589874906" cy="114.88098270668723" r="4"/><circle cx="142.56230589874906" cy="121.41986545873547" r="4"/>
+  </g>
+  <ellipse cx="100" cy="104" rx="20" ry="12" fill="#fff" opacity="0.32"/>
+</svg>

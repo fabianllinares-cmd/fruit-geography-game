@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs><radialGradient id="k" cx="34%" cy="28%" r="78%">
+  <stop offset="0%" stop-color="#a3e635"/>
+  <stop offset="52%" stop-color="#65a30d"/>
+  <stop offset="100%" stop-color="#3f6212"/>
+</radialGradient>
+    <radialGradient id="skin" cx="34%" cy="28%" r="78%">
+  <stop offset="0%" stop-color="#a8a29e"/>
+  <stop offset="52%" stop-color="#78716c"/>
+  <stop offset="100%" stop-color="#44403c"/>
+</radialGradient>
+  </defs>
+  <circle cx="128" cy="132" r="88" fill="url(#skin)" stroke="#44403c" stroke-width="3"/>
+  <circle cx="128" cy="132" r="68" fill="url(#k)"/>
+  <circle cx="128" cy="132" r="16" fill="#fef9c3"/>
+  <g fill="#1c1917">
+    <circle cx="156" cy="132" r="3.2"/><circle cx="153.22712830126773" cy="144.14874469529164" r="3.2"/><circle cx="145.45771445204454" cy="153.89128150910483" r="3.2"/><circle cx="134.23058615077682" cy="159.29798154109108" r="3.2"/><circle cx="121.7694138492232" cy="159.29798154109108" r="3.2"/><circle cx="110.54228554795546" cy="153.89128150910483" r="3.2"/><circle cx="102.77287169873227" cy="144.14874469529164" r="3.2"/><circle cx="100" cy="132" r="3.2"/><circle cx="102.77287169873226" cy="119.85125530470837" r="3.2"/><circle cx="110.54228554795546" cy="110.10871849089517" r="3.2"/><circle cx="121.76941384922318" cy="104.70201845890894" r="3.2"/><circle cx="134.2305861507768" cy="104.70201845890894" r="3.2"/><circle cx="145.45771445204454" cy="110.10871849089517" r="3.2"/><circle cx="153.22712830126773" cy="119.85125530470836" r="3.2"/>
+  </g>
+  <ellipse cx="100" cy="108" rx="18" ry="10" fill="#fff" opacity="0.25"/>
+</svg>

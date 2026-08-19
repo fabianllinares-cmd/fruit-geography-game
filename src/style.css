@@ -83,7 +83,9 @@ body {
 .icon-btn {
   width: 40px;
   height: 40px;
-  font-size: 18px;
+  display: grid;
+  place-items: center;
+  padding: 0;
 }
 
 .scores {
@@ -128,8 +130,80 @@ body {
   color: var(--muted);
 }
 
-#highest-emoji {
-  font-size: 22px;
+.hud-art,
+.next-art,
+.then-art,
+.powerup-art,
+.icon-art,
+.inline-icon,
+.theme-card .te {
+  display: block;
+  object-fit: contain;
+  image-rendering: auto;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.hud-art {
+  width: 28px;
+  height: 28px;
+}
+
+.hud-art-lg {
+  width: 30px;
+  height: 30px;
+}
+
+.icon-art {
+  width: 22px;
+  height: 22px;
+  margin: 0 auto;
+}
+
+.inline-icon {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  vertical-align: -4px;
+}
+
+.next-art {
+  width: 32px;
+  height: 32px;
+}
+
+.then-art {
+  width: 24px;
+  height: 24px;
+}
+
+.powerup-art {
+  width: 28px;
+  height: 28px;
+}
+
+.theme-card .te {
+  width: 36px;
+  height: 36px;
+}
+
+.energy-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.highest-stat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.sound-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .next-row {
@@ -160,14 +234,6 @@ body {
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 700;
-}
-
-.next-emoji {
-  font-size: 26px;
-}
-
-.then-emoji {
-  font-size: 20px;
 }
 
 .next-name {
@@ -260,10 +326,6 @@ body {
 
 .powerup:disabled {
   cursor: not-allowed;
-}
-
-.powerup-emoji {
-  font-size: 22px;
 }
 
 .powerup-name {
@@ -403,9 +465,8 @@ body {
 }
 
 .theme-card .te {
-  font-size: 28px;
-  display: grid;
-  place-items: center;
+  width: 36px;
+  height: 36px;
 }
 
 .theme-card b {
