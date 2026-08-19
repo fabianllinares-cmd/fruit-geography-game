@@ -22,61 +22,61 @@ export const classicTheme: Theme = {
     '--shadow': 'rgba(180, 83, 9, 0.18)',
     '--btn-text': '#fff7ed',
   },
-  objects: buildObjects([
+  objects: buildObjects('classic', [
     {
       id: 'cherry',
       name: 'Cherry',
-      visual: { emoji: '🍒', fill: '#e11d48', stroke: '#9f1239', highlight: '#fb7185', style: 'fruit', leaf: true },
+      visual: { fill: '#e11d48', stroke: '#9f1239', highlight: '#fb7185', style: 'fruit' },
     },
     {
       id: 'strawberry',
       name: 'Strawberry',
-      visual: { emoji: '🍓', fill: '#f43f5e', stroke: '#be123c', highlight: '#fda4af', style: 'fruit', leaf: true },
+      visual: { fill: '#f43f5e', stroke: '#be123c', highlight: '#fda4af', style: 'fruit' },
     },
     {
-      id: 'grape',
-      name: 'Grape',
-      visual: { emoji: '🍇', fill: '#7c3aed', stroke: '#5b21b6', highlight: '#c4b5fd', style: 'fruit' },
+      id: 'blueberry',
+      name: 'Blueberry',
+      visual: { fill: '#2563eb', stroke: '#1e3a8a', highlight: '#93c5fd', style: 'fruit' },
     },
     {
-      id: 'lemon',
-      name: 'Lemon',
-      visual: { emoji: '🍋', fill: '#facc15', stroke: '#ca8a04', highlight: '#fef08a', style: 'fruit' },
+      id: 'grapes',
+      name: 'Grapes',
+      visual: { fill: '#7c3aed', stroke: '#5b21b6', highlight: '#c4b5fd', style: 'fruit' },
+    },
+    {
+      id: 'lime',
+      name: 'Lime',
+      visual: { fill: '#84cc16', stroke: '#3f6212', highlight: '#d9f99d', style: 'fruit' },
     },
     {
       id: 'orange',
       name: 'Orange',
-      visual: { emoji: '🍊', fill: '#fb923c', stroke: '#c2410c', highlight: '#fed7aa', style: 'fruit' },
+      visual: { fill: '#fb923c', stroke: '#c2410c', highlight: '#fed7aa', style: 'fruit' },
     },
     {
       id: 'apple',
       name: 'Apple',
-      visual: { emoji: '🍎', fill: '#ef4444', stroke: '#b91c1c', highlight: '#fca5a5', style: 'fruit', leaf: true },
-    },
-    {
-      id: 'peach',
-      name: 'Peach',
-      visual: { emoji: '🍑', fill: '#fb7185', stroke: '#e11d48', highlight: '#fecdd3', style: 'fruit' },
+      visual: { fill: '#ef4444', stroke: '#b91c1c', highlight: '#fca5a5', style: 'fruit' },
     },
     {
       id: 'pear',
       name: 'Pear',
-      visual: { emoji: '🍐', fill: '#a3e635', stroke: '#4d7c0f', highlight: '#d9f99d', style: 'fruit', leaf: true },
+      visual: { fill: '#a3e635', stroke: '#4d7c0f', highlight: '#d9f99d', style: 'fruit' },
+    },
+    {
+      id: 'peach',
+      name: 'Peach',
+      visual: { fill: '#fb7185', stroke: '#e11d48', highlight: '#fecdd3', style: 'fruit' },
     },
     {
       id: 'pineapple',
       name: 'Pineapple',
-      visual: { emoji: '🍍', fill: '#f59e0b', stroke: '#b45309', highlight: '#fde68a', style: 'fruit', leaf: true },
-    },
-    {
-      id: 'melon',
-      name: 'Melon',
-      visual: { emoji: '🍈', fill: '#86efac', stroke: '#15803d', highlight: '#dcfce7', style: 'fruit' },
+      visual: { fill: '#f59e0b', stroke: '#b45309', highlight: '#fde68a', style: 'fruit' },
     },
     {
       id: 'watermelon',
       name: 'Watermelon',
-      visual: { emoji: '🍉', fill: '#fb7185', stroke: '#166534', highlight: '#fecdd3', style: 'fruit' },
+      visual: { fill: '#fb7185', stroke: '#166534', highlight: '#fecdd3', style: 'fruit' },
     },
   ]),
 };

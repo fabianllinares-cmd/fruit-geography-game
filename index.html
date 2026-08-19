@@ -18,7 +18,7 @@
     <div id="app">
       <header class="hud">
         <button type="button" id="theme-btn" class="theme-pill" aria-label="Choose theme">
-          <span id="theme-emoji">🍎</span>
+          <span id="theme-emoji" class="sprite-slot"></span>
           <span id="theme-name">Classic</span>
         </button>
         <div class="scores">
@@ -33,24 +33,25 @@
         </div>
         <div class="highest" title="Highest object">
           <span class="highest-label">Top</span>
-          <span id="highest-emoji">🍒</span>
+          <span id="highest-emoji" class="sprite-slot"></span>
         </div>
-        <button type="button" id="menu-btn" class="icon-btn" aria-label="Menu">☰</button>
+        <button type="button" id="menu-btn" class="icon-btn" aria-label="Menu"></button>
       </header>
 
       <div class="next-row">
         <div class="next-main">
           <span class="next-label">Next</span>
-          <span id="now-emoji" class="next-emoji">🍒</span>
+          <span id="now-emoji" class="next-emoji sprite-slot"></span>
           <span id="now-name" class="next-name">Cherry</span>
         </div>
         <div class="next-after">
           <span class="next-label">Then</span>
-          <span id="then-emoji" class="then-emoji">🍓</span>
+          <span id="then-emoji" class="then-emoji sprite-slot"></span>
         </div>
       </div>
 
       <section class="stage" id="stage">
+        <img id="board-bg" class="board-bg" alt="" />
         <canvas id="board" width="360" height="520"></canvas>
         <div id="danger-tag" class="danger-tag" hidden>DANGER</div>
         <div id="target-banner" class="target-banner" hidden>
@@ -63,7 +64,7 @@
 
       <div class="energy">
         <div class="energy-top">
-          <span>🌍 Geography energy</span>
+          <span class="energy-label"><span id="energy-icon" class="sprite-slot"></span> Geography energy</span>
           <span id="energy-status">Merges charge a quiz</span>
         </div>
         <div class="energy-bar" aria-label="Geography energy">
