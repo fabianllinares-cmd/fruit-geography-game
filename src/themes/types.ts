@@ -28,5 +28,8 @@ export interface Theme {
   cssVars: Record<string, string>;
 }
 
-/** Physics radii in world units. Visible sprite alpha is fitted to diameter 2 * radius. */
-export const RADII = [14, 18, 23, 28, 34, 40, 47, 55, 64, 74, 86] as const;
+/**
+ * Physics radii in world units. Sprites draw slightly larger than this circle
+ * so fruits nest with less empty collision padding.
+ */
+export const RADII = [12, 15, 20, 24, 29, 34, 40, 46, 54, 63, 73] as const;

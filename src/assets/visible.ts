@@ -32,6 +32,72 @@ export function keyBlackMatte(data: Uint8ClampedArray | Uint8Array): void {
   }
 }
 
+function saturationAndLuma(r: number, g: number, b: number): { sat: number; lum: number } {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const lum = (r + g + b) / 3;
+  const sat = max === 0 ? 0 : ((max - min) / max) * 255;
+  return { sat, lum };
+}
+
+function isContactShadowPixel(r: number, g: number, b: number, a: number): boolean {
+  if (a <= 8) return false;
+  const { sat, lum } = saturationAndLuma(r, g, b);
+  return sat < 50 && lum > 150;
+}
+
+/**
+ * Remove the baked-in pale oval under apple/orange without editing source PNGs.
+ * Floods desaturated bright pixels upward from the bottom of the silhouette.
+ */
+export function keyContactShadow(
+  data: Uint8ClampedArray | Uint8Array,
+  width: number,
+  height: number,
+): void {
+  const bounds = visibleBoundsFromRgba(data, width, height);
+  if (!bounds) return;
+  const x0 = bounds.x;
+  const y0 = bounds.y;
+  const x1 = bounds.x + bounds.w;
+  const y1 = bounds.y + bounds.h;
+  const ySeed = y0 + Math.floor(bounds.h * 0.8);
+  const yLimit = y0 + Math.floor(bounds.h * 0.5);
+  const seen = new Uint8Array(width * height);
+  const stack: number[] = [];
+
+  const index = (x: number, y: number) => (y * width + x) * 4;
+  const mark = (x: number, y: number) => {
+    const pixel = y * width + x;
+    if (seen[pixel]) return;
+    const i = index(x, y);
+    if (!isContactShadowPixel(data[i], data[i + 1], data[i + 2], data[i + 3])) return;
+    seen[pixel] = 1;
+    stack.push(x, y);
+  };
+
+  for (let y = ySeed; y < y1; y++) {
+    for (let x = x0; x < x1; x++) mark(x, y);
+  }
+
+  while (stack.length) {
+    const y = stack.pop()!;
+    const x = stack.pop()!;
+    if (x + 1 < x1) mark(x + 1, y);
+    if (x - 1 >= x0) mark(x - 1, y);
+    if (y + 1 < y1) mark(x, y + 1);
+    if (y - 1 >= yLimit) mark(x, y - 1);
+    if (x + 1 < x1 && y + 1 < y1) mark(x + 1, y + 1);
+    if (x - 1 >= x0 && y + 1 < y1) mark(x - 1, y + 1);
+    if (x + 1 < x1 && y - 1 >= yLimit) mark(x + 1, y - 1);
+    if (x - 1 >= x0 && y - 1 >= yLimit) mark(x - 1, y - 1);
+  }
+
+  for (let p = 0; p < seen.length; p++) {
+    if (seen[p]) data[p * 4 + 3] = 0;
+  }
+}
+
 /** Tight AABB of pixels whose alpha is above the cutoff. */
 export function visibleBoundsFromRgba(
   data: Uint8ClampedArray | Uint8Array,
@@ -58,16 +124,20 @@ export function visibleBoundsFromRgba(
   return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
 }
 
+/** Draw the fruit a bit larger than its collision circle so piles nest. */
+export const VISUAL_RADIUS_SCALE = 1.12;
+
 /**
- * Map visible artwork into the existing circular physics diameter.
- * Longest visible side fills 2 * radius; aspect ratio is preserved.
+ * Map visible artwork onto the physics circle.
+ * The shorter visible side fills the diameter so wide fruits (strawberry)
+ * stay larger than the previous level instead of shrinking to their width.
  */
 export function fitDestRect(boundsW: number, boundsH: number, radius: number): DestRect {
   const diameter = radius * 2;
   if (boundsW <= 0 || boundsH <= 0) {
     return { x: -radius, y: -radius, w: diameter, h: diameter };
   }
-  const scale = diameter / Math.max(boundsW, boundsH);
+  const scale = diameter / Math.min(boundsW, boundsH);
   const w = boundsW * scale;
   const h = boundsH * scale;
   return { x: -w / 2, y: -h / 2, w, h };

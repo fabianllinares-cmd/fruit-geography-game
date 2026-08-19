@@ -216,7 +216,7 @@ export class App {
   private _applyPower(id: PowerUpId): void {
     if (id === 'earthquake') {
       this.engine.earthquake();
-      this.renderer.fx.bump(10);
+      this.renderer.fx.bump(18);
       audio.powerup();
       audio.haptic(30);
     } else if (id === 'remove-small') {

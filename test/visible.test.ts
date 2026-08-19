@@ -3,6 +3,7 @@ import {
   NIGHT_GLOW_FILTER,
   fitDestRect,
   keyBlackMatte,
+  keyContactShadow,
   trimInsets,
   visibleBoundsFromRgba,
 } from '../src/assets/visible';
@@ -26,17 +27,24 @@ describe('visible sprite bounds', () => {
     expect(bounds).toEqual({ x: 2, y: 3, w: 2, h: 2 });
   });
 
-  it('fits the longest visible side to the physics diameter', () => {
+  it('fills the physics diameter using the shorter visible side', () => {
     const round = fitDestRect(100, 100, 20);
     expect(round).toEqual({ x: -20, y: -20, w: 40, h: 40 });
     const tall = fitDestRect(50, 100, 20);
-    expect(tall.w).toBe(20);
-    expect(tall.h).toBe(40);
-    expect(tall.x).toBe(-10);
-    expect(tall.y).toBe(-20);
+    expect(tall.w).toBe(40);
+    expect(tall.h).toBe(80);
+    expect(tall.x).toBe(-20);
+    expect(tall.y).toBe(-40);
     const wide = fitDestRect(100, 50, 20);
-    expect(wide.w).toBe(40);
-    expect(wide.h).toBe(20);
+    expect(wide.w).toBe(80);
+    expect(wide.h).toBe(40);
+  });
+
+  it('draws a wide strawberry larger than a tall gooseberry at the next-smaller radius', () => {
+    const goose = fitDestRect(749, 900, 15);
+    const straw = fitDestRect(900, 547, 20);
+    expect(straw.h).toBeGreaterThan(goose.h);
+    expect(straw.w).toBeGreaterThan(goose.w);
   });
 
   it('keeps Night glow as alpha drop-shadows rather than a box glow', () => {
@@ -72,5 +80,27 @@ describe('visible sprite bounds', () => {
     const bounds = visibleBoundsFromRgba(data, width, height);
     expect(bounds).toEqual({ x: 2, y: 2, w: 2, h: 2 });
     expect(data[3]).toBe(0);
+  });
+
+  it('removes a pale contact oval under a fruit without eating the body', () => {
+    const width = 8;
+    const height = 8;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const setPx = (x: number, y: number, r: number, g: number, b: number, a: number) => {
+      const i = (y * width + x) * 4;
+      data[i] = r;
+      data[i + 1] = g;
+      data[i + 2] = b;
+      data[i + 3] = a;
+    };
+    for (let y = 2; y <= 5; y++) {
+      for (let x = 2; x <= 5; x++) setPx(x, y, 220, 80, 20, 255);
+    }
+    for (let x = 2; x <= 5; x++) setPx(x, 6, 240, 238, 230, 255);
+    for (let x = 3; x <= 4; x++) setPx(x, 7, 250, 250, 245, 255);
+    keyContactShadow(data, width, height);
+    expect(data[(6 * width + 3) * 4 + 3]).toBe(0);
+    expect(data[(7 * width + 3) * 4 + 3]).toBe(0);
+    expect(data[(3 * width + 3) * 4 + 3]).toBe(255);
   });
 });
