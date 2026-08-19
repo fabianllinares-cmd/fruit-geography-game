@@ -28,6 +28,17 @@ npm run build    # produce a production build in dist/
 npm run preview  # preview the production build
 ```
 
+## Testing
+
+Headless [Playwright](https://playwright.dev/) checks run against the dev server.
+Start the dev server (`npm run dev`) in one terminal, then in another:
+
+```bash
+npx playwright install chromium   # one-time: download the browser binary
+npm run test:smoke                # asserts drop + merge + power-up logic
+npm run test:visual               # renders the board and saves screenshots to test/output/
+```
+
 ## Project structure
 
 ```
