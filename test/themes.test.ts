@@ -17,9 +17,10 @@ describe('themes', () => {
       expect(theme.objects[10].radius).toBeGreaterThan(theme.objects[0].radius);
     }
     expect(classicTheme.objects[0].name).toBe('Cherry');
-    expect(nightTheme.objects[0].name).toBe('Blueberry');
-    expect(tropicalTheme.objects[2].name).toBe('Passion fruit');
-    expect(sportsTheme.objects[7].name).toBe('Football');
+    expect(nightTheme.objects[0].name).toBe('Cherry');
+    expect(tropicalTheme.objects[2].name).toBe('Kiwi');
+    expect(sportsTheme.objects[0].name).toBe('Shuttlecock');
+    expect(sportsTheme.objects[7].name).toBe('Basketball');
     expect(drinksTheme.objects[4].name).toBe('Martini');
     expect(getTheme('sports').id).toBe('sports');
     expect(getTheme('missing').id).toBe('classic');

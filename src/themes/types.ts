@@ -1,42 +1,12 @@
 export type VisualStyle = 'fruit' | 'night-fruit' | 'tropical' | 'ball' | 'drink';
 
-export type BallKind =
-  | 'pingpong'
-  | 'golf'
-  | 'pool'
-  | 'tennis'
-  | 'baseball'
-  | 'handball'
-  | 'volleyball'
-  | 'soccer'
-  | 'basketball'
-  | 'bowling'
-  | 'championship';
-
-export type DrinkKind =
-  | 'shot'
-  | 'beer-small'
-  | 'whiskey'
-  | 'wine-glass'
-  | 'martini'
-  | 'cocktail'
-  | 'pint'
-  | 'wine-bottle'
-  | 'champagne'
-  | 'pitcher'
-  | 'punch';
-
 export interface VisualSpec {
-  emoji: string;
+  sprite: string;
   fill: string;
   stroke: string;
   highlight: string;
   style: VisualStyle;
-  leaf?: boolean;
   glow?: string;
-  ball?: BallKind;
-  drink?: DrinkKind;
-  number?: string;
 }
 
 export interface ObjectDef {
@@ -58,4 +28,5 @@ export interface Theme {
   cssVars: Record<string, string>;
 }
 
+/** Physics radii in world units. Visual sprites are drawn at diameter 2 * radius. */
 export const RADII = [14, 18, 23, 28, 34, 40, 47, 55, 64, 74, 86] as const;

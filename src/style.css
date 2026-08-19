@@ -84,6 +84,10 @@ body {
   width: 40px;
   height: 40px;
   font-size: 18px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  overflow: hidden;
 }
 
 .scores {
@@ -129,7 +133,8 @@ body {
 }
 
 #highest-emoji {
-  font-size: 22px;
+  width: 28px;
+  height: 28px;
 }
 
 .next-row {
@@ -163,11 +168,13 @@ body {
 }
 
 .next-emoji {
-  font-size: 26px;
+  width: 30px;
+  height: 30px;
 }
 
 .then-emoji {
-  font-size: 20px;
+  width: 22px;
+  height: 22px;
 }
 
 .next-name {
@@ -184,14 +191,29 @@ body {
   box-shadow: 0 16px 40px var(--shadow);
   border: 1px solid var(--panel-border);
   touch-action: none;
+  background: var(--stage);
+}
+
+.board-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  z-index: 0;
 }
 
 #board {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
   touch-action: none;
   cursor: pointer;
+  background: transparent;
 }
 
 .danger-tag {
@@ -207,6 +229,11 @@ body {
   padding: 4px 12px;
   border-radius: 999px;
   animation: pulse 0.8s ease infinite alternate;
+}
+
+.danger-tag,
+.target-banner {
+  z-index: 2;
 }
 
 .danger-tag[hidden],
@@ -262,8 +289,10 @@ body {
   cursor: not-allowed;
 }
 
-.powerup-emoji {
-  font-size: 22px;
+.powerup-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .powerup-name {
@@ -280,6 +309,8 @@ body {
   border: 1px solid var(--panel-border);
   border-radius: 14px;
   padding: 8px 10px;
+  overflow: hidden;
+  flex: 0 0 auto;
 }
 
 .energy-top {
@@ -403,9 +434,10 @@ body {
 }
 
 .theme-card .te {
-  font-size: 28px;
-  display: grid;
-  place-items: center;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  display: block;
 }
 
 .theme-card b {
@@ -495,6 +527,112 @@ body {
 @keyframes pop {
   from { transform: scale(0.94); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+.sprite-slot {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.sprite,
+.sprite-slot img,
+.ui-icon,
+.powerup-icon {
+  object-fit: contain;
+  object-position: center;
+  image-rendering: auto;
+  pointer-events: none;
+}
+
+.sprite-slot img {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+#energy-icon {
+  width: 20px;
+  height: 20px;
+  overflow: hidden;
+}
+
+#theme-emoji {
+  width: 22px;
+  height: 22px;
+}
+
+.ui-icon {
+  width: 28px;
+  height: 28px;
+  display: block;
+}
+
+.icon-btn .ui-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.title-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.card-title,
+.quiz-kicker,
+.resume-line,
+.highest-stat,
+.energy-label,
+.btn-with-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.card-title {
+  margin: 0 0 8px;
+}
+
+.energy-label {
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.energy-bolt {
+  width: 18px;
+  height: 18px;
+}
+
+.target-icon {
+  width: 22px;
+  height: 22px;
+  margin-right: 6px;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+.resume-sprite {
+  width: 36px;
+  height: 36px;
+}
+
+.highest-stat img {
+  width: 28px;
+  height: 28px;
+}
+
+.btn-with-icon {
+  display: inline-flex;
+}
+
+.sound-btn {
+  width: 44px;
+  height: 44px;
 }
 
 @media (min-width: 500px) {
