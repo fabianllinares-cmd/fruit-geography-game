@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   NIGHT_GLOW_FILTER,
+  VISUAL_RADIUS_SCALE,
   fitDestRect,
   keyBlackMatte,
+  keyBottomDesatOutline,
+  keyBottomRimHighlight,
+  keyContactShadow,
+  keyNearWhiteFringe,
   trimInsets,
   visibleBoundsFromRgba,
+  visualScaleForSprite,
 } from '../src/assets/visible';
 
 describe('visible sprite bounds', () => {
@@ -26,17 +32,31 @@ describe('visible sprite bounds', () => {
     expect(bounds).toEqual({ x: 2, y: 3, w: 2, h: 2 });
   });
 
-  it('fits the longest visible side to the physics diameter', () => {
+  it('fills the physics diameter using the shorter visible side', () => {
     const round = fitDestRect(100, 100, 20);
     expect(round).toEqual({ x: -20, y: -20, w: 40, h: 40 });
     const tall = fitDestRect(50, 100, 20);
-    expect(tall.w).toBe(20);
-    expect(tall.h).toBe(40);
-    expect(tall.x).toBe(-10);
-    expect(tall.y).toBe(-20);
+    expect(tall.w).toBe(40);
+    expect(tall.h).toBe(80);
+    expect(tall.x).toBe(-20);
+    expect(tall.y).toBe(-40);
     const wide = fitDestRect(100, 50, 20);
-    expect(wide.w).toBe(40);
-    expect(wide.h).toBe(20);
+    expect(wide.w).toBe(80);
+    expect(wide.h).toBe(40);
+  });
+
+  it('draws a wide strawberry larger than a tall gooseberry at the next-smaller radius', () => {
+    const goose = fitDestRect(749, 900, 12 * visualScaleForSprite('assets/images/fruits/gooseberry.png'));
+    const straw = fitDestRect(394, 477, 21 * visualScaleForSprite('assets/images/fruits/strawberry.png'));
+    expect(straw.h).toBeGreaterThan(goose.h * 1.4);
+    expect(straw.w).toBeGreaterThan(goose.w * 1.4);
+  });
+
+  it('draws sprites larger than their collision circles so piles can nest', () => {
+    expect(VISUAL_RADIUS_SCALE).toBeGreaterThanOrEqual(1.4);
+    expect(visualScaleForSprite('assets/images/fruits/strawberry.png')).toBeGreaterThan(
+      visualScaleForSprite('assets/images/fruits/gooseberry.png'),
+    );
   });
 
   it('keeps Night glow as alpha drop-shadows rather than a box glow', () => {
@@ -72,5 +92,90 @@ describe('visible sprite bounds', () => {
     const bounds = visibleBoundsFromRgba(data, width, height);
     expect(bounds).toEqual({ x: 2, y: 2, w: 2, h: 2 });
     expect(data[3]).toBe(0);
+  });
+
+  it('removes a pale contact oval under a fruit without eating the body', () => {
+    const width = 8;
+    const height = 8;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const setPx = (x: number, y: number, r: number, g: number, b: number, a: number) => {
+      const i = (y * width + x) * 4;
+      data[i] = r;
+      data[i + 1] = g;
+      data[i + 2] = b;
+      data[i + 3] = a;
+    };
+    for (let y = 2; y <= 5; y++) {
+      for (let x = 2; x <= 5; x++) setPx(x, y, 220, 80, 20, 255);
+    }
+    for (let x = 2; x <= 5; x++) setPx(x, 6, 240, 238, 230, 255);
+    for (let x = 3; x <= 4; x++) setPx(x, 7, 250, 250, 245, 255);
+    keyContactShadow(data, width, height);
+    expect(data[(6 * width + 3) * 4 + 3]).toBe(0);
+    expect(data[(7 * width + 3) * 4 + 3]).toBe(0);
+    expect(data[(3 * width + 3) * 4 + 3]).toBe(255);
+  });
+
+  it('keys the beige bottom rim left after the pale oval is removed', () => {
+    const width = 8;
+    const height = 8;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const setPx = (x: number, y: number, r: number, g: number, b: number, a: number) => {
+      const i = (y * width + x) * 4;
+      data[i] = r;
+      data[i + 1] = g;
+      data[i + 2] = b;
+      data[i + 3] = a;
+    };
+    for (let y = 1; y <= 5; y++) {
+      for (let x = 2; x <= 5; x++) setPx(x, y, 220, 80, 20, 255);
+    }
+    for (let x = 2; x <= 5; x++) setPx(x, 6, 180, 130, 126, 255);
+    for (let x = 3; x <= 4; x++) setPx(x, 7, 244, 243, 239, 255);
+    keyContactShadow(data, width, height);
+    keyBottomRimHighlight(data, width, height);
+    expect(data[(6 * width + 3) * 4 + 3]).toBe(0);
+    expect(data[(7 * width + 3) * 4 + 3]).toBe(0);
+    expect(data[(3 * width + 3) * 4 + 3]).toBe(255);
+  });
+
+  it('shaves a desaturated brown outline off the bottom of a fruit', () => {
+    const width = 6;
+    const height = 8;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const setPx = (x: number, y: number, r: number, g: number, b: number, a: number) => {
+      const i = (y * width + x) * 4;
+      data[i] = r;
+      data[i + 1] = g;
+      data[i + 2] = b;
+      data[i + 3] = a;
+    };
+    for (let y = 1; y <= 5; y++) {
+      for (let x = 2; x <= 3; x++) setPx(x, y, 200, 30, 20, 255);
+    }
+    for (let x = 2; x <= 3; x++) setPx(x, 6, 110, 80, 70, 255);
+    for (let x = 2; x <= 3; x++) setPx(x, 7, 108, 78, 68, 255);
+    keyBottomDesatOutline(data, width, height);
+    expect(data[(7 * width + 2) * 4 + 3]).toBe(0);
+    expect(data[(6 * width + 2) * 4 + 3]).toBe(0);
+    expect(data[(3 * width + 2) * 4 + 3]).toBe(255);
+  });
+
+  it('drops near-white fringe pixels that inflate a strawberry-style silhouette', () => {
+    const width = 6;
+    const height = 4;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const setPx = (x: number, y: number, r: number, g: number, b: number, a: number) => {
+      const i = (y * width + x) * 4;
+      data[i] = r;
+      data[i + 1] = g;
+      data[i + 2] = b;
+      data[i + 3] = a;
+    };
+    setPx(2, 1, 200, 40, 40, 255);
+    setPx(3, 1, 200, 40, 40, 255);
+    for (let x = 0; x < width; x++) setPx(x, 3, 250, 250, 245, 255);
+    keyNearWhiteFringe(data);
+    expect(visibleBoundsFromRgba(data, width, height)).toEqual({ x: 2, y: 1, w: 2, h: 1 });
   });
 });

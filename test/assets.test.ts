@@ -55,6 +55,7 @@ describe('production asset pack', () => {
         expect(object.radius).toBe(RADII[index]);
       });
     }
+    expect(RADII[2]).toBeGreaterThan(RADII[1] * 1.5);
   });
 
   it('resolves all supplied UI and effect files', () => {
