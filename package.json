@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "vite --host --port 5173",
     "build": "vite build",
-    "preview": "vite preview --host --port 4173"
+    "preview": "vite preview --host --port 4173",
+    "test:smoke": "node test/smoke.mjs"
   },
   "dependencies": {
     "matter-js": "^0.20.0"
   },
   "devDependencies": {
+    "playwright": "^1.62.1",
     "vite": "^5.4.0"
   }
 }

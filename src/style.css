@@ -148,6 +148,10 @@ body {
   backdrop-filter: blur(3px);
 }
 
+.game-over[hidden] {
+  display: none;
+}
+
 .game-over-card {
   text-align: center;
   padding: 24px 32px;
