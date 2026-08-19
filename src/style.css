@@ -439,6 +439,8 @@ body {
   height: 42px;
   object-fit: contain;
   display: block;
+  position: relative;
+  overflow: hidden;
 }
 
 .theme-card b {
@@ -534,6 +536,8 @@ body {
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
 }
 
 .sprite,
@@ -551,6 +555,17 @@ body {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
+}
+
+img.sprite-cropped {
+  position: absolute;
+  max-width: none;
+  max-height: none;
+  width: calc(var(--canvas) / var(--max) * 100%);
+  height: calc(var(--canvas) / var(--max) * 100%);
+  left: calc(-1 * var(--sx) / var(--max) * 100%);
+  top: calc(-1 * var(--sy) / var(--max) * 100%);
+  object-fit: fill;
 }
 
 #energy-icon {
