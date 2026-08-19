@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Fruit Atlas — Merge & Conquer</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍉</text></svg>" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-emoji">🍉</span>
+          <div class="brand-text">
+            <h1>Fruit Atlas</h1>
+            <p>Merge fruit. Master geography.</p>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-label">Score</span>
+            <span class="stat-value" id="score">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Best</span>
+            <span class="stat-value" id="best">0</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="game-area">
+        <section class="board-wrap">
+          <canvas id="board" width="420" height="620"></canvas>
+          <div class="next-chip" id="next-chip">
+            <span class="next-label">Next</span>
+            <span class="next-emoji" id="next-emoji">🍒</span>
+          </div>
+          <div class="game-over" id="game-over" hidden>
+            <div class="game-over-card">
+              <h2>Game Over</h2>
+              <p id="final-score">Score: 0</p>
+              <button id="restart" class="btn btn-primary">Play again</button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="sidebar">
+          <div class="panel">
+            <h3>Geography power-ups</h3>
+            <p class="panel-hint">Merge fruit to charge the globe. Spend charge to bend the planet to your will.</p>
+            <div class="charge">
+              <div class="charge-bar"><span id="charge-fill"></span></div>
+              <span class="charge-text"><span id="charge-value">0</span>/100 charge</span>
+            </div>
+            <div class="powerups" id="powerups"></div>
+          </div>
+
+          <div class="panel">
+            <h3>Fruit atlas</h3>
+            <p class="panel-hint">Every fruit hails from a top-producing country.</p>
+            <ul class="atlas" id="atlas"></ul>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="footer">
+        <span>Move to aim · Click / tap to drop · <kbd>Space</kbd> drop · <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> power-ups</span>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

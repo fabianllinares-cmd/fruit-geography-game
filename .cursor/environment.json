@@ -1,0 +1,17 @@
+{
+  "name": "Fruit Atlas (Vite)",
+  "install": "npm install",
+  "terminals": [
+    {
+      "name": "dev-server",
+      "command": "npm run dev",
+      "description": "Vite dev server for the Fruit Atlas game on http://localhost:5173"
+    }
+  ],
+  "ports": [
+    {
+      "name": "Vite dev server",
+      "port": 5173
+    }
+  ]
+}
