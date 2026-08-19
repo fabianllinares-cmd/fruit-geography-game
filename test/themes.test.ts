@@ -18,9 +18,13 @@ describe('themes', () => {
     }
     expect(classicTheme.objects[0].name).toBe('Cherry');
     expect(nightTheme.objects[0].name).toBe('Cherry');
+    expect(nightTheme.objects[8].name).toBe('Plum');
     expect(tropicalTheme.objects[2].name).toBe('Kiwi');
     expect(sportsTheme.objects[0].name).toBe('Shuttlecock');
+    expect(sportsTheme.objects[0].id).toBe('shuttlecock');
     expect(sportsTheme.objects[7].name).toBe('Basketball');
+    expect(sportsTheme.objects[9].id).toBe('american_football');
+    expect(drinksTheme.objects[0].id).toBe('ice_cube');
     expect(drinksTheme.objects[4].name).toBe('Martini');
     expect(getTheme('sports').id).toBe('sports');
     expect(getTheme('missing').id).toBe('classic');

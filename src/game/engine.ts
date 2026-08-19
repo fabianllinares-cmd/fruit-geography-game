@@ -1,7 +1,11 @@
 import Matter from 'matter-js';
 import { ChargeMeter, energyFromMerge } from './charge';
+import {
+  colliderFor,
+  colliderHalfWidth,
+  createColliderBody,
+} from './colliders';
 import { DangerTracker, DANGER_HOLD_MS } from './danger';
-import { RADII } from '../themes/types';
 import { canMerge, MAX_LEVEL, nextLevel, scoreForMerge } from './scoring';
 import { pickDropLevel } from './spawn';
 import type { EngineCallbacks, GameSnapshot, PauseReason, SavedGame } from './types';
@@ -27,6 +31,8 @@ export interface FruitBody extends Matter.Body {
   isFruit: true;
   gameLevel: number;
   bornAt: number;
+  spriteOffX: number;
+  spriteOffY: number;
 }
 
 function isFruit(body: Matter.Body): body is FruitBody {
@@ -117,9 +123,9 @@ export class MergeEngine {
   }
 
   setDropX(x: number): void {
-    const radius = this._radius(this.currentLevel);
-    const min = WALL + radius;
-    const max = this.width - WALL - radius;
+    const half = this._halfWidth(this.currentLevel);
+    const min = WALL + half;
+    const max = this.width - WALL - half;
     this.dropX = Math.max(min, Math.min(max, x));
   }
 
@@ -255,7 +261,7 @@ export class MergeEngine {
     }
 
     const occupied = this.fruits().some((fruit) => {
-      const top = fruit.position.y - this._radius(fruit.gameLevel);
+      const top = fruit.bounds.min.y;
       const settled = Math.abs(fruit.velocity.y) < 0.45 && Math.abs(fruit.velocity.x) < 0.45;
       return top < DANGER_Y && settled;
     });
@@ -321,8 +327,8 @@ export class MergeEngine {
     this.setDropX(this.dropX);
   }
 
-  private _radius(level: number): number {
-    return RADII[Math.max(0, Math.min(RADII.length - 1, level))];
+  private _halfWidth(level: number): number {
+    return colliderHalfWidth(colliderFor(this.themeId, level));
   }
 
   private _buildBounds(): void {
@@ -351,20 +357,24 @@ export class MergeEngine {
   }
 
   private _makeFruit(level: number, x: number, y: number): FruitBody {
-    const radius = this._radius(level);
-    const body = Bodies.circle(x, y, radius, {
-      restitution: 0.12,
-      friction: 0.5,
-      frictionStatic: 0.7,
-      frictionAir: 0.01,
+    const drinks = this.themeId === 'drinks';
+    const collider = colliderFor(this.themeId, level);
+    const created = createColliderBody(x, y, collider, {
+      restitution: drinks ? 0.05 : 0.12,
+      friction: drinks ? 0.72 : 0.5,
+      frictionStatic: drinks ? 0.92 : 0.7,
+      frictionAir: drinks ? 0.016 : 0.01,
       density: 0.0012 + level * 0.00012,
       slop: 0.04,
       sleepThreshold: 40,
-    }) as FruitBody;
+    });
+    const body = created.body as FruitBody;
     body.isFruit = true;
     body.gameLevel = level;
     body.bornAt = this.now();
     body.label = 'fruit';
+    body.spriteOffX = created.spriteOffX;
+    body.spriteOffY = created.spriteOffY;
     this.highestLevel = Math.max(this.highestLevel, level);
     return body;
   }

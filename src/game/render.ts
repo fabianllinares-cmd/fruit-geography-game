@@ -18,7 +18,7 @@ export class GameRenderer {
     if (!wrap) return;
     const cssW = wrap.clientWidth;
     const cssH = wrap.clientHeight;
-    this.dpr = Math.min(2, window.devicePixelRatio || 1);
+    this.dpr = Math.min(3, window.devicePixelRatio || 1);
     this.canvas.width = Math.max(1, Math.round(cssW * this.dpr));
     this.canvas.height = Math.max(1, Math.round(cssH * this.dpr));
     this.canvas.style.width = `${cssW}px`;
@@ -60,7 +60,7 @@ export class GameRenderer {
         ctx.shadowColor = 'rgba(250, 250, 250, 0.9)';
         ctx.shadowBlur = 16;
       }
-      drawObject(ctx, def, body.angle, pop);
+      drawObject(ctx, def, body.angle, pop, body.spriteOffX || 0, body.spriteOffY || 0);
       ctx.restore();
     }
 

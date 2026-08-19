@@ -17,7 +17,7 @@ export const classicTheme: Theme = {
     '--accent': '#ea580c',
     '--accent-2': '#16a34a',
     '--danger': '#dc2626',
-    '--stage': 'linear-gradient(180deg, #fff7ed 0%, #fed7aa 55%, #fdba74 100%)',
+    '--stage': '#cfe8c9',
     '--hud': 'rgba(255, 247, 237, 0.92)',
     '--shadow': 'rgba(180, 83, 9, 0.18)',
     '--btn-text': '#fff7ed',

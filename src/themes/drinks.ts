@@ -17,14 +17,14 @@ export const drinksTheme: Theme = {
     '--accent': '#e8c07a',
     '--accent-2': '#fb7185',
     '--danger': '#fda4af',
-    '--stage': 'linear-gradient(180deg, #2a151c 0%, #3b1224 45%, #1c1016 100%)',
+    '--stage': '#1a0f14',
     '--hud': 'rgba(28, 16, 22, 0.9)',
     '--shadow': 'rgba(232, 192, 122, 0.16)',
     '--btn-text': '#1c1016',
   },
   objects: buildObjects('drinks', [
     {
-      id: 'ice',
+      id: 'ice_cube',
       name: 'Ice cube',
       visual: { fill: '#bae6fd', stroke: '#38bdf8', highlight: '#ffffff', style: 'drink' },
     },
@@ -34,12 +34,12 @@ export const drinksTheme: Theme = {
       visual: { fill: '#4d7c0f', stroke: '#365314', highlight: '#a3e635', style: 'drink' },
     },
     {
-      id: 'shot',
+      id: 'shot_glass',
       name: 'Shot glass',
       visual: { fill: '#f59e0b', stroke: '#e8c07a', highlight: '#fde68a', style: 'drink' },
     },
     {
-      id: 'wine',
+      id: 'wine_glass',
       name: 'Wine glass',
       visual: { fill: '#9f1239', stroke: '#e8c07a', highlight: '#fb7185', style: 'drink' },
     },
@@ -54,8 +54,8 @@ export const drinksTheme: Theme = {
       visual: { fill: '#b45309', stroke: '#e8c07a', highlight: '#fdba74', style: 'drink' },
     },
     {
-      id: 'cocktail',
-      name: 'Tropical cocktail',
+      id: 'blue_cocktail',
+      name: 'Blue cocktail',
       visual: { fill: '#fb7185', stroke: '#e8c07a', highlight: '#fecdd3', style: 'drink' },
     },
     {

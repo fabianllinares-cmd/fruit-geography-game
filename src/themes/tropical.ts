@@ -17,7 +17,7 @@ export const tropicalTheme: Theme = {
     '--accent': '#f97316',
     '--accent-2': '#14b8a6',
     '--danger': '#fb7185',
-    '--stage': 'linear-gradient(180deg, #7dd3fc 0%, #fb923c 42%, #ea580c 70%, #fde68a 100%)',
+    '--stage': '#f4b183',
     '--hud': 'rgba(8, 47, 73, 0.72)',
     '--shadow': 'rgba(234, 88, 12, 0.28)',
     '--btn-text': '#082f49',
