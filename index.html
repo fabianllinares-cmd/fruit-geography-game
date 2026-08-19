@@ -2,71 +2,77 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Fruit Atlas — Merge & Conquer</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍉</text></svg>" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0f766e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Physics merge game with geography power-ups" />
+    <title>Fruit Geography Game</title>
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
   </head>
   <body>
     <div id="app">
-      <header class="topbar">
-        <div class="brand">
-          <span class="brand-emoji">🍉</span>
-          <div class="brand-text">
-            <h1>Fruit Atlas</h1>
-            <p>Merge fruit. Master geography.</p>
-          </div>
-        </div>
-        <div class="stats">
+      <header class="hud">
+        <button type="button" id="theme-btn" class="theme-pill" aria-label="Change theme">
+          <span id="theme-emoji">🍎</span>
+          <span id="theme-name">Classic</span>
+        </button>
+        <div class="scores">
           <div class="stat">
-            <span class="stat-label">Score</span>
-            <span class="stat-value" id="score">0</span>
+            <span>Score</span>
+            <b id="score">0</b>
           </div>
           <div class="stat">
-            <span class="stat-label">Best</span>
-            <span class="stat-value" id="best">0</span>
+            <span>Best</span>
+            <b id="best">0</b>
           </div>
         </div>
+        <div class="highest" title="Highest object">
+          <span class="highest-label">Top</span>
+          <span id="highest-emoji">🍒</span>
+        </div>
+        <button type="button" id="menu-btn" class="icon-btn" aria-label="Menu">☰</button>
       </header>
 
-      <main class="game-area">
-        <section class="board-wrap">
-          <canvas id="board" width="420" height="620"></canvas>
-          <div class="next-chip" id="next-chip">
-            <span class="next-label">Next</span>
-            <span class="next-emoji" id="next-emoji">🍒</span>
-          </div>
-          <div class="game-over" id="game-over" hidden>
-            <div class="game-over-card">
-              <h2>Game Over</h2>
-              <p id="final-score">Score: 0</p>
-              <button id="restart" class="btn btn-primary">Play again</button>
-            </div>
-          </div>
-        </section>
+      <div class="next-row">
+        <div class="next-main">
+          <span class="next-label">Next</span>
+          <span id="now-emoji" class="next-emoji">🍒</span>
+          <span id="now-name" class="next-name">Cherry</span>
+        </div>
+        <div class="next-after">
+          <span class="next-label">Then</span>
+          <span id="then-emoji" class="then-emoji">🍓</span>
+        </div>
+      </div>
 
-        <aside class="sidebar">
-          <div class="panel">
-            <h3>Geography power-ups</h3>
-            <p class="panel-hint">Merge fruit to charge the globe. Spend charge to bend the planet to your will.</p>
-            <div class="charge">
-              <div class="charge-bar"><span id="charge-fill"></span></div>
-              <span class="charge-text"><span id="charge-value">0</span>/100 charge</span>
-            </div>
-            <div class="powerups" id="powerups"></div>
-          </div>
+      <section class="stage" id="stage">
+        <canvas id="board" width="360" height="520"></canvas>
+        <div id="danger-tag" class="danger-tag" hidden>DANGER</div>
+        <div id="target-banner" class="target-banner" hidden>
+          <span>Tap an object to remove</span>
+          <button type="button" id="target-cancel" class="btn btn-ghost">Cancel</button>
+        </div>
+      </section>
 
-          <div class="panel">
-            <h3>Fruit atlas</h3>
-            <p class="panel-hint">Every fruit hails from a top-producing country.</p>
-            <ul class="atlas" id="atlas"></ul>
-          </div>
-        </aside>
-      </main>
+      <div class="power-row" id="powerups"></div>
 
-      <footer class="footer">
-        <span>Move to aim · Click / tap to drop · <kbd>Space</kbd> drop · <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> power-ups</span>
-      </footer>
+      <div class="energy">
+        <div class="energy-top">
+          <span>🌍 Geography energy</span>
+          <span id="energy-status">Merges charge a quiz</span>
+        </div>
+        <div class="energy-bar" aria-label="Geography energy">
+          <span id="energy-fill"></span>
+        </div>
+      </div>
     </div>
-    <script type="module" src="/src/main.js"></script>
+
+    <div id="overlays"></div>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

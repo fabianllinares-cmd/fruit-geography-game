@@ -1,51 +1,49 @@
 # fruit-geography-game
 
-Physics fruit merge game with geography power-ups.
+Mobile-first physics merge game with geography power-ups.
 
-**Fruit Atlas** is a Suika-style merge game built with [Vite](https://vitejs.dev/) and
-the [matter-js](https://brm.io/matter-js/) physics engine. Drop fruit into the jar;
-two of the same fruit merge into the next, bigger fruit. Every fruit is tagged with a
-top-producing country, and merging charges geography-themed power-ups.
+Drop matching objects so they merge into the next size. Merges charge
+**geography energy**. When the meter is full you may attempt a power-up — but
+only a correct multiple-choice geography answer actually activates it.
 
-## Gameplay
+## Play
 
-- Move the pointer to aim, then click / tap (or press `Space`) to drop a fruit.
-- Matching fruit merge into the next tier and score points.
-- Merges fill the **charge** meter, which powers three geography abilities:
-  - 🌍 **Earthquake** — jolts every fruit to reshuffle the pile.
-  - 🌋 **Volcano** — erupts the biggest fruit for bonus points.
-  - 🧭 **Continental Drift** — pulls all fruit toward the centre to force merges.
-- Keep the pile below the danger line or it's game over.
+- Drag horizontally to aim, then release / tap to drop.
+- Two objects of the **same level** merge into the next, larger object.
+- Keep the stack below the danger line (a brief bounce over it is OK).
+- Fill geography energy, then pick Shake / Sweep / Target and answer a question.
 
-## Getting started
+Themes (same engine, different skins):
 
-Requires Node.js 22+.
+1. Fruit Classic
+2. Fruit Night
+3. Tropical Island
+4. Sports Arena
+5. Nightcap Bar (drinks)
 
-```bash
-npm install      # install dependencies
-npm run dev      # start the dev server at http://localhost:5173
-npm run build    # produce a production build in dist/
-npm run preview  # preview the production build
-```
-
-## Testing
-
-Headless [Playwright](https://playwright.dev/) checks run against the dev server.
-Start the dev server (`npm run dev`) in one terminal, then in another:
+## Scripts
 
 ```bash
-npx playwright install chromium   # one-time: download the browser binary
-npm run test:smoke                # asserts drop + merge + power-up logic
-npm run test:visual               # renders the board and saves screenshots to test/output/
+npm install
+npm run dev          # http://localhost:5173
+npm test             # vitest unit tests
+npm run build        # production build in dist/
+npm run preview      # preview the production build
 ```
+
+The production site is built for GitHub Pages at `/fruit-geography-game/`
+(relative asset paths). A workflow in `.github/workflows/pages.yml` runs tests,
+builds, and deploys `dist/`.
 
 ## Project structure
 
 ```
-index.html          # app shell and layout
-src/main.js         # UI wiring, input handling, HUD updates
-src/game.js         # matter.js physics, merge logic, power-ups, rendering
-src/data.js         # fruit tiers (with countries) and power-up definitions
-src/style.css       # styling
-.cursor/            # Cloud Agent environment configuration
+src/game/           physics, scoring, charge, danger, rendering
+src/themes/         five data-driven skins
+src/geography/      local question bank + challenge deck
+src/ui/             HUD, overlays, input
+src/persistence.ts  local save / best scores
+src/audio.ts        Web Audio + haptics
 ```
+
+Cloud Agent setup lives in `.cursor/environment.json` and is unchanged.
