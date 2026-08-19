@@ -16,8 +16,42 @@ describe('themes', () => {
       expect(theme.objects[10].mergeTarget).toBeNull();
       expect(theme.objects[10].radius).toBeGreaterThan(theme.objects[0].radius);
     }
-    expect(classicTheme.objects[0].name).toBe('Cherry');
-    expect(nightTheme.objects[0].name).toBe('Cherry');
+    expect(classicTheme.objects[0].name).toBe('Blueberry');
+    expect(nightTheme.objects[0].name).toBe('Blueberry');
+    expect(classicTheme.objects.map((object) => object.id)).toEqual([
+      'blueberry',
+      'gooseberry',
+      'strawberry',
+      'grapes',
+      'lemon',
+      'orange',
+      'apple',
+      'pear',
+      'peach',
+      'pineapple',
+      'watermelon',
+    ]);
+    expect(nightTheme.objects.map((object) => object.id)).toEqual(
+      classicTheme.objects.map((object) => object.id),
+    );
+    expect(nightTheme.objects.map((object) => object.visual.sprite)).toEqual(
+      classicTheme.objects.map((object) => object.visual.sprite),
+    );
+    expect(tropicalTheme.objects.map((object) => object.id)).toEqual([
+      'raspberry',
+      'starfruit',
+      'kiwi',
+      'passionfruit',
+      'mango',
+      'banana',
+      'dragonfruit',
+      'papaya',
+      'coconut',
+      'pineapple',
+      'watermelon',
+    ]);
+    expect(tropicalTheme.objects[9].visual.sprite).toBe(classicTheme.objects[9].visual.sprite);
+    expect(tropicalTheme.objects[10].visual.sprite).toBe(classicTheme.objects[10].visual.sprite);
     expect(tropicalTheme.objects[2].name).toBe('Kiwi');
     expect(sportsTheme.objects[0].name).toBe('Shuttlecock');
     expect(sportsTheme.objects[7].name).toBe('Basketball');

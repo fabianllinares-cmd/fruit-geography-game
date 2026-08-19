@@ -6,6 +6,20 @@ export const ASSET_MANIFEST = manifest;
 
 export const THEME_IDS = ['classic', 'night', 'tropical', 'sports', 'drinks'] as const satisfies readonly ThemeId[];
 
+export const CLASSIC_FRUIT_IDS = [
+  'blueberry',
+  'gooseberry',
+  'strawberry',
+  'grapes',
+  'lemon',
+  'orange',
+  'apple',
+  'pear',
+  'peach',
+  'pineapple',
+  'watermelon',
+] as const;
+
 export function assetUrl(relPath: string): string {
   const base = import.meta.env.BASE_URL || './';
   const prefix = base.endsWith('/') ? base : `${base}/`;
@@ -31,12 +45,12 @@ export function effectPath(id: keyof typeof manifest.effects): string {
 }
 
 export function allAssetPaths(): string[] {
-  const files: string[] = [];
+  const files = new Set<string>();
   for (const themeId of THEME_IDS) {
-    for (const row of manifest.themes[themeId]) files.push(row.file);
-    files.push(manifest.backgrounds[themeId]);
+    for (const row of manifest.themes[themeId]) files.add(row.file);
+    files.add(manifest.backgrounds[themeId]);
   }
-  files.push(...Object.values(manifest.buttons));
-  files.push(...Object.values(manifest.effects));
-  return files;
+  for (const file of Object.values(manifest.buttons)) files.add(file);
+  for (const file of Object.values(manifest.effects)) files.add(file);
+  return [...files];
 }

@@ -24,59 +24,59 @@ export const nightTheme: Theme = {
   },
   objects: buildObjects('night', [
     {
-      id: 'cherry',
-      name: 'Cherry',
-      visual: { fill: '#fb7185', stroke: '#22d3ee', highlight: '#fda4af', style: 'night-fruit', glow: '#22d3ee' },
+      id: 'blueberry',
+      name: 'Blueberry',
+      visual: { fill: '#2563eb', stroke: '#22d3ee', highlight: '#93c5fd', style: 'night-fruit', glow: '#67e8ff' },
+    },
+    {
+      id: 'gooseberry',
+      name: 'Gooseberry',
+      visual: { fill: '#65a30d', stroke: '#22d3ee', highlight: '#bef264', style: 'night-fruit', glow: '#67e8ff' },
     },
     {
       id: 'strawberry',
       name: 'Strawberry',
-      visual: { fill: '#f43f5e', stroke: '#fb7185', highlight: '#fecdd3', style: 'night-fruit', glow: '#fb7185' },
-    },
-    {
-      id: 'blueberry',
-      name: 'Blueberry',
-      visual: { fill: '#1d4ed8', stroke: '#22d3ee', highlight: '#93c5fd', style: 'night-fruit', glow: '#22d3ee' },
+      visual: { fill: '#f43f5e', stroke: '#22d3ee', highlight: '#fda4af', style: 'night-fruit', glow: '#67e8ff' },
     },
     {
       id: 'grapes',
       name: 'Grapes',
-      visual: { fill: '#7c3aed', stroke: '#e879f9', highlight: '#d8b4fe', style: 'night-fruit', glow: '#e879f9' },
+      visual: { fill: '#7c3aed', stroke: '#e879f9', highlight: '#c4b5fd', style: 'night-fruit', glow: '#67e8ff' },
     },
     {
-      id: 'lime',
-      name: 'Lime',
-      visual: { fill: '#a3e635', stroke: '#22d3ee', highlight: '#d9f99d', style: 'night-fruit', glow: '#a3e635' },
+      id: 'lemon',
+      name: 'Lemon',
+      visual: { fill: '#facc15', stroke: '#22d3ee', highlight: '#fef08a', style: 'night-fruit', glow: '#67e8ff' },
     },
     {
       id: 'orange',
       name: 'Orange',
-      visual: { fill: '#fb923c', stroke: '#f9a8d4', highlight: '#fed7aa', style: 'night-fruit', glow: '#fb923c' },
+      visual: { fill: '#fb923c', stroke: '#22d3ee', highlight: '#fed7aa', style: 'night-fruit', glow: '#67e8ff' },
     },
     {
       id: 'apple',
       name: 'Apple',
-      visual: { fill: '#ef4444', stroke: '#fb7185', highlight: '#fecaca', style: 'night-fruit', glow: '#fb7185' },
+      visual: { fill: '#ef4444', stroke: '#22d3ee', highlight: '#fca5a5', style: 'night-fruit', glow: '#67e8ff' },
     },
     {
       id: 'pear',
       name: 'Pear',
-      visual: { fill: '#84cc16', stroke: '#a3e635', highlight: '#d9f99d', style: 'night-fruit', glow: '#a3e635' },
+      visual: { fill: '#a3e635', stroke: '#22d3ee', highlight: '#d9f99d', style: 'night-fruit', glow: '#67e8ff' },
     },
     {
       id: 'peach',
       name: 'Peach',
-      visual: { fill: '#fb7185', stroke: '#f9a8d4', highlight: '#fecdd3', style: 'night-fruit', glow: '#f9a8d4' },
+      visual: { fill: '#fb7185', stroke: '#e879f9', highlight: '#fecdd3', style: 'night-fruit', glow: '#67e8ff' },
     },
     {
       id: 'pineapple',
       name: 'Pineapple',
-      visual: { fill: '#f59e0b', stroke: '#fde68a', highlight: '#fef08a', style: 'night-fruit', glow: '#fde68a' },
+      visual: { fill: '#f59e0b', stroke: '#22d3ee', highlight: '#fde68a', style: 'night-fruit', glow: '#67e8ff' },
     },
     {
       id: 'watermelon',
       name: 'Watermelon',
-      visual: { fill: '#fb7185', stroke: '#5eead4', highlight: '#fecdd3', style: 'night-fruit', glow: '#5eead4' },
+      visual: { fill: '#fb7185', stroke: '#22d3ee', highlight: '#fecdd3', style: 'night-fruit', glow: '#67e8ff' },
     },
   ]),
 };
