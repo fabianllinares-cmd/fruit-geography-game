@@ -296,11 +296,11 @@
     ]
   },
   "backgrounds": {
-    "classic": "assets/images/board-bg/board_bg_classic.png",
-    "night": "assets/images/board-bg/board_bg_night.png",
-    "tropical": "assets/images/board-bg/board_bg_tropical.png",
-    "sports": "assets/images/board-bg/board_bg_sports.png",
-    "drinks": "assets/images/board-bg/board_bg_drinks.png"
+    "classic": "backgrounds/classic.png",
+    "night": "backgrounds/night.png",
+    "tropical": "backgrounds/tropical.png",
+    "sports": "backgrounds/sports.png",
+    "drinks": "backgrounds/drinks.png"
   },
   "buttons": {
     "play": "assets/images/ui/buttons/btn_play.png",
