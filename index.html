@@ -18,7 +18,7 @@
     <div id="app">
       <header class="hud">
         <button type="button" id="theme-btn" class="theme-pill" aria-label="Choose theme">
-          <span id="theme-emoji">🍎</span>
+          <img id="theme-icon" class="hud-art" alt="Classic" draggable="false" />
           <span id="theme-name">Classic</span>
         </button>
         <div class="scores">
@@ -33,20 +33,22 @@
         </div>
         <div class="highest" title="Highest object">
           <span class="highest-label">Top</span>
-          <span id="highest-emoji">🍒</span>
+          <img id="highest-art" class="hud-art hud-art-lg" alt="Cherry" draggable="false" />
         </div>
-        <button type="button" id="menu-btn" class="icon-btn" aria-label="Menu">☰</button>
+        <button type="button" id="menu-btn" class="icon-btn" aria-label="Menu">
+          <img id="menu-icon" class="icon-art" alt="" draggable="false" />
+        </button>
       </header>
 
       <div class="next-row">
         <div class="next-main">
           <span class="next-label">Next</span>
-          <span id="now-emoji" class="next-emoji">🍒</span>
+          <img id="now-art" class="next-art" alt="Cherry" draggable="false" />
           <span id="now-name" class="next-name">Cherry</span>
         </div>
         <div class="next-after">
           <span class="next-label">Then</span>
-          <span id="then-emoji" class="then-emoji">🍓</span>
+          <img id="then-art" class="then-art" alt="" draggable="false" />
         </div>
       </div>
 
@@ -63,7 +65,11 @@
 
       <div class="energy">
         <div class="energy-top">
-          <span>🌍 Geography energy</span>
+          <span class="energy-label">
+            <img id="geo-icon" class="inline-icon" alt="" draggable="false" />
+            Geography energy
+            <img id="energy-icon" class="inline-icon" alt="" draggable="false" />
+          </span>
           <span id="energy-status">Merges charge a quiz</span>
         </div>
         <div class="energy-bar" aria-label="Geography energy">

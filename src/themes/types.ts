@@ -27,6 +27,9 @@ export type DrinkKind =
   | 'punch';
 
 export interface VisualSpec {
+  /** Local bundled artwork URL (SVG/PNG/WebP). */
+  src: string;
+  /** Accessible short label; not used as the rendered sprite. */
   emoji: string;
   fill: string;
   stroke: string;
@@ -53,6 +56,8 @@ export interface Theme {
   name: string;
   shortName: string;
   emoji: string;
+  icon: string;
+  background: string;
   tagline: string;
   objects: ObjectDef[];
   cssVars: Record<string, string>;

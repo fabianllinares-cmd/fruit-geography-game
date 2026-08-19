@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+  <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="3.2" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  
+</defs><circle cx="128" cy="132" r="108" fill="#fb7185" opacity=".16"/>
+<circle cx="128" cy="132" r="100" fill="none" stroke="#fb7185" stroke-width="5" opacity=".55"/>
+<g filter="url(#glow)"><defs><radialGradient id="s" cx="34%" cy="28%" r="78%">
+  <stop offset="0%" stop-color="#fda4af"/>
+  <stop offset="52%" stop-color="#be123c"/>
+  <stop offset="100%" stop-color="#4c0519"/>
+</radialGradient>
+  <clipPath id="sc"><path d="M128 58c28-2 62 22 66 58 6 52-30 96-66 112C92 212 56 168 62 116 66 80 100 56 128 58z"/></clipPath>
+</defs>
+<path d="M128 58c28-2 62 22 66 58 6 52-30 96-66 112C92 212 56 168 62 116 66 80 100 56 128 58z" fill="url(#s)" stroke="#4c0519" stroke-width="3"/>
+<g clip-path="url(#sc)" fill="#fde68a">
+  <ellipse cx="108" cy="110" rx="4" ry="6"/><ellipse cx="148" cy="118" rx="4" ry="6"/>
+  <ellipse cx="124" cy="142" rx="4" ry="6"/><ellipse cx="96" cy="148" rx="3.5" ry="5.5"/>
+  <ellipse cx="156" cy="150" rx="3.5" ry="5.5"/><ellipse cx="118" cy="174" rx="4" ry="6"/>
+  <ellipse cx="142" cy="178" rx="3.5" ry="5.5"/><ellipse cx="132" cy="204" rx="3.2" ry="5"/>
+</g>
+<path d="M86 70c14-18 28-24 42-12 12-20 30-22 46-8 2 22-10 34-24 40-16 4-28-2-40 4-12-10-22-16-24-24z" fill="#3f6212"/>
+<path d="M104 52c8 6 16 8 24 6" fill="none" stroke="#84cc16" stroke-width="2"/>
+<ellipse cx="108" cy="100" rx="14" ry="8" fill="#fff" opacity="0.35"/></g>
+</svg>

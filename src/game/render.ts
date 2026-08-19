@@ -1,5 +1,6 @@
+import { getArt } from '../assets/loader';
 import type { Theme } from '../themes/types';
-import { drawObject } from './draw';
+import { drawGroundShadow, drawObject, popScale } from './draw';
 import { DANGER_Y, DROP_Y, MergeEngine, WALL, WORLD_HEIGHT, WORLD_WIDTH } from './engine';
 import { FxLayer } from './fx';
 
@@ -43,6 +44,8 @@ export class GameRenderer {
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, w, h);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.setTransform(sx, 0, 0, sy, shake.x * sx, shake.y * sy);
 
     this._background(ctx, theme);
@@ -53,14 +56,16 @@ export class GameRenderer {
       const def = theme.objects[body.gameLevel];
       if (!def) continue;
       const age = now - (body.bornAt || now);
-      const pop = age < 180 ? 0.72 + (age / 180) * 0.28 : 1;
+      const pop = popScale(age);
+      const glowBoost = age < 220 ? 1 - age / 220 : 0;
       ctx.save();
       ctx.translate(body.position.x, body.position.y);
+      drawGroundShadow(ctx, def.radius * pop);
       if (this.targetMode) {
         ctx.shadowColor = 'rgba(250, 250, 250, 0.9)';
         ctx.shadowBlur = 16;
       }
-      drawObject(ctx, def, body.angle, pop);
+      drawObject(ctx, def, body.angle, pop, glowBoost);
       ctx.restore();
     }
 
@@ -87,57 +92,39 @@ export class GameRenderer {
   }
 
   private _background(ctx: CanvasRenderingContext2D, theme: Theme): void {
-    const stage = theme.cssVars['--stage'] ?? '#111';
-    const g = ctx.createLinearGradient(0, 0, 0, WORLD_HEIGHT);
-    if (theme.id === 'classic') {
-      g.addColorStop(0, '#fff7ed');
-      g.addColorStop(0.55, '#fed7aa');
-      g.addColorStop(1, '#fdba74');
-    } else if (theme.id === 'night') {
-      g.addColorStop(0, '#020617');
-      g.addColorStop(0.5, '#1e1b4b');
-      g.addColorStop(1, '#312e81');
-    } else if (theme.id === 'tropical') {
-      g.addColorStop(0, '#7dd3fc');
-      g.addColorStop(0.4, '#fb923c');
-      g.addColorStop(0.72, '#ea580c');
-      g.addColorStop(1, '#fde68a');
-    } else if (theme.id === 'sports') {
-      g.addColorStop(0, '#14532d');
-      g.addColorStop(1, '#3f6212');
+    const bg = getArt(theme.background);
+    if (bg && bg.complete && bg.naturalWidth > 0) {
+      ctx.drawImage(bg, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     } else {
-      g.addColorStop(0, '#2a151c');
-      g.addColorStop(1, '#1c1016');
-    }
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-
-    if (theme.id === 'sports') {
-      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(28, 130, WORLD_WIDTH - 56, WORLD_HEIGHT - 160);
-      ctx.beginPath();
-      ctx.arc(WORLD_WIDTH / 2, WORLD_HEIGHT * 0.62, 42, 0, Math.PI * 2);
-      ctx.stroke();
-    } else if (theme.id === 'tropical') {
-      ctx.fillStyle = 'rgba(255,255,255,0.18)';
-      for (let i = 0; i < 4; i++) {
-        ctx.beginPath();
-        ctx.ellipse(40 + i * 90, 36, 28, 12, 0, 0, Math.PI * 2);
-        ctx.fill();
+      const g = ctx.createLinearGradient(0, 0, 0, WORLD_HEIGHT);
+      if (theme.id === 'classic') {
+        g.addColorStop(0, '#fff7ed');
+        g.addColorStop(0.55, '#fed7aa');
+        g.addColorStop(1, '#fdba74');
+      } else if (theme.id === 'night') {
+        g.addColorStop(0, '#020617');
+        g.addColorStop(0.5, '#1e1b4b');
+        g.addColorStop(1, '#312e81');
+      } else if (theme.id === 'tropical') {
+        g.addColorStop(0, '#7dd3fc');
+        g.addColorStop(0.4, '#fb923c');
+        g.addColorStop(0.72, '#ea580c');
+        g.addColorStop(1, '#fde68a');
+      } else if (theme.id === 'sports') {
+        g.addColorStop(0, '#14532d');
+        g.addColorStop(1, '#3f6212');
+      } else {
+        g.addColorStop(0, '#2a151c');
+        g.addColorStop(1, '#1c1016');
       }
-    } else if (theme.id === 'drinks') {
-      ctx.fillStyle = 'rgba(232,192,122,0.08)';
-      for (let y = 40; y < WORLD_HEIGHT; y += 28) {
-        ctx.fillRect(0, y, WORLD_WIDTH, 1);
-      }
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     }
 
     ctx.fillStyle = 'rgba(0,0,0,0.12)';
     ctx.fillRect(0, 0, WALL, WORLD_HEIGHT);
     ctx.fillRect(WORLD_WIDTH - WALL, 0, WALL, WORLD_HEIGHT);
     ctx.fillRect(0, WORLD_HEIGHT - WALL, WORLD_WIDTH, WALL);
-    void stage;
   }
 
   private _danger(ctx: CanvasRenderingContext2D): void {

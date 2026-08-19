@@ -15,14 +15,23 @@ import {
   saveLastTheme,
   saveSoundEnabled,
 } from '../persistence';
+import { artUrls, uiIcons } from '../assets';
+import { preloadUrls } from '../assets/loader';
 import { applyThemeVars, getTheme, THEMES, type Theme } from '../themes';
 import type { PowerUpId } from '../game/types';
 
-const POWERUPS: Array<{ id: PowerUpId; emoji: string; name: string; hint: string }> = [
-  { id: 'earthquake', emoji: '🌍', name: 'Shake', hint: 'Jostle the pile' },
-  { id: 'remove-small', emoji: '🫧', name: 'Sweep', hint: 'Clear small objects' },
-  { id: 'target-remove', emoji: '🎯', name: 'Target', hint: 'Pick one to remove' },
+const POWERUPS: Array<{ id: PowerUpId; icon: string; name: string; hint: string }> = [
+  { id: 'earthquake', icon: uiIcons.shake, name: 'Shake', hint: 'Jostle the pile' },
+  { id: 'remove-small', icon: uiIcons.sweep, name: 'Sweep', hint: 'Clear small objects' },
+  { id: 'target-remove', icon: uiIcons.target, name: 'Target', hint: 'Pick one to remove' },
 ];
+
+function setArt(id: string, src: string | undefined, alt = ''): void {
+  const el = document.getElementById(id);
+  if (!(el instanceof HTMLImageElement) || !src) return;
+  el.src = src;
+  el.alt = alt;
+}
 
 export class App {
   private theme: Theme;
@@ -49,8 +58,25 @@ export class App {
     this._bindUi();
     this._renderPowerups();
     applyThemeVars(this.theme);
+    this._bindStaticIcons();
     this._syncHud();
     this.renderer.resize();
+    preloadUrls(
+      artUrls(
+        ...THEMES.map((theme) => {
+          const urls: Record<string, string> = { icon: theme.icon, background: theme.background };
+          for (const obj of theme.objects) urls[obj.id] = obj.visual.src;
+          return urls;
+        }),
+        uiIcons,
+      ),
+    );
+  }
+
+  private _bindStaticIcons(): void {
+    setArt('menu-icon', uiIcons.menu, 'Menu');
+    setArt('geo-icon', uiIcons.geography, '');
+    setArt('energy-icon', uiIcons.energy, '');
   }
 
   start(): void {
@@ -79,7 +105,7 @@ export class App {
           void document.getElementById('score')!.offsetWidth;
         }
         const def = this.theme.objects[this.engine.highestLevel];
-        if (def) document.getElementById('highest-emoji')!.textContent = def.visual.emoji;
+        if (def) setArt('highest-art', def.visual.src, def.name);
         void level;
       },
       onMerge: (level, x, y, chain) => {
@@ -174,7 +200,7 @@ export class App {
       btn.type = 'button';
       btn.className = 'powerup';
       btn.dataset.id = p.id;
-      btn.innerHTML = `<span class="powerup-emoji">${p.emoji}</span><span class="powerup-name">${p.name}</span>`;
+      btn.innerHTML = `<img class="powerup-art" src="${p.icon}" alt="" draggable="false"><span class="powerup-name">${p.name}</span>`;
       btn.title = p.hint;
       btn.addEventListener('click', () => this._requestPower(p.id));
       row.appendChild(btn);
@@ -236,12 +262,12 @@ export class App {
   }
 
   private _syncHud(): void {
-    document.getElementById('theme-emoji')!.textContent = this.theme.emoji;
+    setArt('theme-icon', this.theme.icon, this.theme.shortName);
     document.getElementById('theme-name')!.textContent = this.theme.shortName;
     document.getElementById('score')!.textContent = String(this.engine.score);
     document.getElementById('best')!.textContent = String(getBest(this.theme.id));
     const top = this.theme.objects[this.engine.highestLevel] ?? this.theme.objects[0];
-    document.getElementById('highest-emoji')!.textContent = top.visual.emoji;
+    setArt('highest-art', top.visual.src, top.name);
     this._syncNext(this.engine.currentLevel, this.engine.nextLevel);
     this._syncEnergy(this.engine.charge.energy, this.engine.charge.ready);
   }
@@ -250,10 +276,10 @@ export class App {
     const now = this.theme.objects[current];
     const then = this.theme.objects[next];
     if (now) {
-      document.getElementById('now-emoji')!.textContent = now.visual.emoji;
+      setArt('now-art', now.visual.src, now.name);
       document.getElementById('now-name')!.textContent = now.name;
     }
-    if (then) document.getElementById('then-emoji')!.textContent = then.visual.emoji;
+    if (then) setArt('then-art', then.visual.src, then.name);
   }
 
   private _syncEnergy(energy: number, ready: boolean): void {
@@ -301,7 +327,7 @@ export class App {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'theme-card';
-      btn.innerHTML = `<span class="te">${theme.emoji}</span><div><b>${theme.emoji} ${theme.name}</b><span>${theme.tagline}</span></div>`;
+      btn.innerHTML = `<img class="te" src="${theme.icon}" alt="" draggable="false"><div><b>${theme.name}</b><span>${theme.tagline}</span></div>`;
       btn.addEventListener('click', () => this._selectTheme(theme, true));
       grid.appendChild(btn);
     }
@@ -340,7 +366,7 @@ export class App {
     const theme = getTheme(themeId);
     const overlay = this._card(
       `<h2>Welcome back</h2>
-       <p>Resume ${theme.emoji} ${theme.name} at ${score} points?</p>
+       <p>Resume ${theme.name} at ${score} points?</p>
        <div class="btn-row">
          <button type="button" class="btn btn-primary" data-act="continue">Continue game</button>
          <button type="button" class="btn btn-ghost" data-act="new">New game</button>
@@ -365,7 +391,7 @@ export class App {
 
   private _showQuestion(question: PresentedQuestion): void {
     const overlay = this._card(
-      `<p class="muted">${question.category}</p>
+      `<p class="muted"><img class="inline-icon" src="${uiIcons.quiz}" alt=""> ${question.category}</p>
        <h2>${escapeHtml(question.prompt)}</h2>
        <div class="answers"></div>`,
       'question',
@@ -431,7 +457,7 @@ export class App {
        <div class="stats-grid">
          <div><span class="muted">Score</span><b>${score}</b></div>
          <div><span class="muted">Best</span><b>${getBest(this.theme.id)}</b></div>
-         <div><span class="muted">Highest</span><b>${def?.visual.emoji ?? ''} ${def?.name ?? ''}</b></div>
+         <div><span class="muted">Highest</span><b class="highest-stat">${def ? `<img class="inline-icon" src="${def.visual.src}" alt=""> ${def.name}` : ''}</b></div>
          <div><span class="muted">Geography</span><b>${accuracy}</b></div>
        </div>
        <div class="btn-row">
@@ -457,7 +483,7 @@ export class App {
        <p class="muted">Questions this run: ${this.engine.geoCorrect} / ${asked || 0} · Bank: ${QUESTIONS.length}</p>
        <div class="sound-row">
          <span>Sound</span>
-         <button type="button" class="btn" data-act="sound">${audio.enabled ? 'On' : 'Off'}</button>
+         <button type="button" class="btn sound-btn" data-act="sound">${soundLabel(audio.enabled)}</button>
        </div>
        <div class="btn-row">
          <button type="button" class="btn btn-primary" data-act="close">Back</button>
@@ -468,7 +494,7 @@ export class App {
     overlay.querySelector('[data-act="sound"]')?.addEventListener('click', (e) => {
       audio.setEnabled(!audio.enabled);
       saveSoundEnabled(audio.enabled);
-      (e.currentTarget as HTMLButtonElement).textContent = audio.enabled ? 'On' : 'Off';
+      (e.currentTarget as HTMLButtonElement).innerHTML = soundLabel(audio.enabled);
     });
     overlay.querySelector('[data-act="close"]')?.addEventListener('click', () => this._clearOverlays());
     overlay.querySelector('[data-act="new"]')?.addEventListener('click', () => {
@@ -522,6 +548,11 @@ export class App {
       dangerHoldMs: DANGER_HOLD_MS,
     };
   }
+}
+
+function soundLabel(enabled: boolean): string {
+  const src = enabled ? uiIcons['sound-on'] : uiIcons['sound-off'];
+  return `<img class="inline-icon" src="${src}" alt=""> ${enabled ? 'On' : 'Off'}`;
 }
 
 function escapeHtml(text: string): string {

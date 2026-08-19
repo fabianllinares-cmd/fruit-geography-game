@@ -4,6 +4,7 @@ import { ChargeMeter, ENERGY_FOR_CHALLENGE, energyFromMerge } from '../src/game/
 import { DANGER_HOLD_MS, DangerTracker } from '../src/game/danger';
 import { DANGER_Y, MergeEngine } from '../src/game/engine';
 import { canMerge, MAX_LEVEL, nextLevel, scoreForMerge } from '../src/game/scoring';
+import { popScale } from '../src/game/draw';
 import { pickDropLevel } from '../src/game/spawn';
 
 function step(engine: MergeEngine, ms: number): void {
@@ -198,5 +199,15 @@ describe('drops', () => {
     for (let i = 0; i < 80; i++) {
       expect(pickDropLevel(() => i / 80)).toBeLessThanOrEqual(4);
     }
+  });
+});
+
+describe('merge pop animation', () => {
+  it('overshoots then settles without changing rest scale', () => {
+    expect(popScale(0)).toBeGreaterThanOrEqual(0.7);
+    expect(popScale(0)).toBeLessThan(1);
+    expect(popScale(140)).toBeGreaterThan(1);
+    expect(popScale(220)).toBe(1);
+    expect(popScale(800)).toBe(1);
   });
 });
