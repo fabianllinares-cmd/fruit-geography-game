@@ -43,7 +43,13 @@ function saturationAndLuma(r: number, g: number, b: number): { sat: number; lum:
 function isContactShadowPixel(r: number, g: number, b: number, a: number): boolean {
   if (a <= 8) return false;
   const { sat, lum } = saturationAndLuma(r, g, b);
-  return sat < 50 && lum > 150;
+  return sat < 70 && lum > 140;
+}
+
+function isNearWhiteFringe(r: number, g: number, b: number, a: number): boolean {
+  if (a <= 8) return false;
+  const { sat, lum } = saturationAndLuma(r, g, b);
+  return sat < 40 && lum > 170;
 }
 
 /**
@@ -98,6 +104,33 @@ export function keyContactShadow(
   }
 }
 
+/** Drop pale fringe pixels that inflate bounds (strawberry canvas bar, etc.). */
+export function keyNearWhiteFringe(data: Uint8ClampedArray | Uint8Array): void {
+  for (let i = 0; i < data.length; i += 4) {
+    if (isNearWhiteFringe(data[i], data[i + 1], data[i + 2], data[i + 3])) data[i + 3] = 0;
+  }
+}
+
+/** Remove the remaining bright crescent along the bottom silhouette. */
+export function keyBottomRimHighlight(
+  data: Uint8ClampedArray | Uint8Array,
+  width: number,
+  height: number,
+): void {
+  const bounds = visibleBoundsFromRgba(data, width, height);
+  if (!bounds) return;
+  const yFrom = bounds.y + Math.floor(bounds.h * 0.86);
+  const x1 = bounds.x + bounds.w;
+  const y1 = bounds.y + bounds.h;
+  for (let y = yFrom; y < y1; y++) {
+    for (let x = bounds.x; x < x1; x++) {
+      const i = (y * width + x) * 4;
+      const { sat, lum } = saturationAndLuma(data[i], data[i + 1], data[i + 2]);
+      if (data[i + 3] > 8 && sat < 90 && lum > 150) data[i + 3] = 0;
+    }
+  }
+}
+
 /** Tight AABB of pixels whose alpha is above the cutoff. */
 export function visibleBoundsFromRgba(
   data: Uint8ClampedArray | Uint8Array,
@@ -125,7 +158,7 @@ export function visibleBoundsFromRgba(
 }
 
 /** Draw the fruit a bit larger than its collision circle so piles nest. */
-export const VISUAL_RADIUS_SCALE = 1.12;
+export const VISUAL_RADIUS_SCALE = 1.22;
 
 /**
  * Map visible artwork onto the physics circle.

@@ -1,5 +1,5 @@
 import { allAssetPaths, assetUrl } from './catalog';
-import { keyBlackMatte, keyContactShadow, visibleBoundsFromRgba, type VisibleBounds } from './visible';
+import { keyBlackMatte, keyBottomRimHighlight, keyContactShadow, keyNearWhiteFringe, visibleBoundsFromRgba, type VisibleBounds } from './visible';
 
 const cache = new Map<string, HTMLImageElement>();
 const boundsCache = new Map<string, VisibleBounds | null>();
@@ -48,6 +48,10 @@ export function usesBlackMatteKey(relPath: string): boolean {
   return relPath.includes('/fruits/');
 }
 
+export function usesWhiteFringeKey(relPath: string): boolean {
+  return relPath.endsWith('/fruits/strawberry.png');
+}
+
 export function usesContactShadowKey(relPath: string): boolean {
   return relPath.endsWith('/fruits/apple.png') || relPath.endsWith('/fruits/orange.png');
 }
@@ -70,8 +74,10 @@ function prepareSprite(relPath: string, img: HTMLImageElement): VisibleBounds | 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     if (usesBlackMatteKey(relPath)) {
       keyBlackMatte(imageData.data);
+      if (usesWhiteFringeKey(relPath)) keyNearWhiteFringe(imageData.data);
       if (usesContactShadowKey(relPath)) {
         keyContactShadow(imageData.data, canvas.width, canvas.height);
+        keyBottomRimHighlight(imageData.data, canvas.width, canvas.height);
       }
       ctx.putImageData(imageData, 0, 0);
       displayCache.set(relPath, canvas);

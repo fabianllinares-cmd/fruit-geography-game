@@ -4,6 +4,7 @@ import {
   fitDestRect,
   keyBlackMatte,
   keyContactShadow,
+  keyNearWhiteFringe,
   trimInsets,
   visibleBoundsFromRgba,
 } from '../src/assets/visible';
@@ -41,8 +42,8 @@ describe('visible sprite bounds', () => {
   });
 
   it('draws a wide strawberry larger than a tall gooseberry at the next-smaller radius', () => {
-    const goose = fitDestRect(749, 900, 15);
-    const straw = fitDestRect(900, 547, 20);
+    const goose = fitDestRect(749, 900, 14);
+    const straw = fitDestRect(394, 477, 20);
     expect(straw.h).toBeGreaterThan(goose.h);
     expect(straw.w).toBeGreaterThan(goose.w);
   });
@@ -102,5 +103,23 @@ describe('visible sprite bounds', () => {
     expect(data[(6 * width + 3) * 4 + 3]).toBe(0);
     expect(data[(7 * width + 3) * 4 + 3]).toBe(0);
     expect(data[(3 * width + 3) * 4 + 3]).toBe(255);
+  });
+
+  it('drops near-white fringe pixels that inflate a strawberry-style silhouette', () => {
+    const width = 6;
+    const height = 4;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const setPx = (x: number, y: number, r: number, g: number, b: number, a: number) => {
+      const i = (y * width + x) * 4;
+      data[i] = r;
+      data[i + 1] = g;
+      data[i + 2] = b;
+      data[i + 3] = a;
+    };
+    setPx(2, 1, 200, 40, 40, 255);
+    setPx(3, 1, 200, 40, 40, 255);
+    for (let x = 0; x < width; x++) setPx(x, 3, 250, 250, 245, 255);
+    keyNearWhiteFringe(data);
+    expect(visibleBoundsFromRgba(data, width, height)).toEqual({ x: 2, y: 1, w: 2, h: 1 });
   });
 });

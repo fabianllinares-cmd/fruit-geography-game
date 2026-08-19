@@ -32,4 +32,4 @@ export interface Theme {
  * Physics radii in world units. Sprites draw slightly larger than this circle
  * so fruits nest with less empty collision padding.
  */
-export const RADII = [12, 15, 20, 24, 29, 34, 40, 46, 54, 63, 73] as const;
+export const RADII = [11, 14, 20, 24, 28, 33, 39, 45, 53, 62, 72] as const;
