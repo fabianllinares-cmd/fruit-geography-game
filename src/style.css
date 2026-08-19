@@ -433,9 +433,14 @@ body {
   cursor: pointer;
 }
 
-.theme-card .te {
+.theme-card .te-slot {
   width: 42px;
   height: 42px;
+}
+
+.theme-card .te {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
 }
@@ -533,6 +538,8 @@ body {
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
 }
 
 .sprite,
@@ -550,6 +557,25 @@ body {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
+}
+
+img.alpha-fit {
+  clip-path: inset(var(--trim-top, 0%) var(--trim-right, 0%) var(--trim-bottom, 0%) var(--trim-left, 0%));
+  transform: scale(var(--trim-scale, 1));
+  transform-origin: center;
+}
+
+/* Night identity is a render-time silhouette glow, not duplicate PNGs.
+   Skip the tiniest HUD slots (theme pill, Then) where the rim muddies. */
+html[data-theme='night'] #now-emoji img,
+html[data-theme='night'] #highest-emoji img,
+html[data-theme='night'] .highest-stat img,
+html[data-theme='night'] .resume-sprite,
+.night-glow {
+  filter:
+    drop-shadow(0 0 1px rgba(103, 232, 255, 0.9))
+    drop-shadow(0 0 3px rgba(59, 130, 246, 0.5))
+    drop-shadow(0 0 5px rgba(168, 85, 247, 0.28));
 }
 
 #energy-icon {

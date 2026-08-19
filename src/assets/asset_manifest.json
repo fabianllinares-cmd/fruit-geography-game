@@ -1,126 +1,126 @@
 {
-  "version": 1,
-  "source": "Generated master asset sheet supplied in ChatGPT conversation",
+  "version": 2,
+  "source": "Classic V4 canonical fruit pack plus existing theme-specific sprites",
   "counts": {
-    "item_sprites": 55,
+    "item_sprites": 42,
     "backgrounds": 5,
     "ui_buttons": 5,
     "effects": 6,
-    "total_png": 71
+    "total_png": 58
   },
   "themes": {
     "classic": [
       {
         "level": 1,
-        "id": "cherry",
-        "file": "assets/images/classic/classic_01_cherry.png"
+        "id": "blueberry",
+        "file": "assets/images/fruits/blueberry.png"
       },
       {
         "level": 2,
-        "id": "strawberry",
-        "file": "assets/images/classic/classic_02_strawberry.png"
+        "id": "gooseberry",
+        "file": "assets/images/fruits/gooseberry.png"
       },
       {
         "level": 3,
-        "id": "blueberry",
-        "file": "assets/images/classic/classic_03_blueberry.png"
+        "id": "strawberry",
+        "file": "assets/images/fruits/strawberry.png"
       },
       {
         "level": 4,
         "id": "grapes",
-        "file": "assets/images/classic/classic_04_grapes.png"
+        "file": "assets/images/fruits/grapes.png"
       },
       {
         "level": 5,
-        "id": "lime",
-        "file": "assets/images/classic/classic_05_lime.png"
+        "id": "lemon",
+        "file": "assets/images/fruits/lemon.png"
       },
       {
         "level": 6,
         "id": "orange",
-        "file": "assets/images/classic/classic_06_orange.png"
+        "file": "assets/images/fruits/orange.png"
       },
       {
         "level": 7,
         "id": "apple",
-        "file": "assets/images/classic/classic_07_apple.png"
+        "file": "assets/images/fruits/apple.png"
       },
       {
         "level": 8,
         "id": "pear",
-        "file": "assets/images/classic/classic_08_pear.png"
+        "file": "assets/images/fruits/pear.png"
       },
       {
         "level": 9,
         "id": "peach",
-        "file": "assets/images/classic/classic_09_peach.png"
+        "file": "assets/images/fruits/peach.png"
       },
       {
         "level": 10,
         "id": "pineapple",
-        "file": "assets/images/classic/classic_10_pineapple.png"
+        "file": "assets/images/fruits/pineapple.png"
       },
       {
         "level": 11,
         "id": "watermelon",
-        "file": "assets/images/classic/classic_11_watermelon.png"
+        "file": "assets/images/fruits/watermelon.png"
       }
     ],
     "night": [
       {
         "level": 1,
-        "id": "cherry",
-        "file": "assets/images/night/night_01_cherry.png"
+        "id": "blueberry",
+        "file": "assets/images/fruits/blueberry.png"
       },
       {
         "level": 2,
-        "id": "strawberry",
-        "file": "assets/images/night/night_02_strawberry.png"
+        "id": "gooseberry",
+        "file": "assets/images/fruits/gooseberry.png"
       },
       {
         "level": 3,
-        "id": "blueberry",
-        "file": "assets/images/night/night_03_blueberry.png"
+        "id": "strawberry",
+        "file": "assets/images/fruits/strawberry.png"
       },
       {
         "level": 4,
         "id": "grapes",
-        "file": "assets/images/night/night_04_grapes.png"
+        "file": "assets/images/fruits/grapes.png"
       },
       {
         "level": 5,
-        "id": "lime",
-        "file": "assets/images/night/night_05_lime.png"
+        "id": "lemon",
+        "file": "assets/images/fruits/lemon.png"
       },
       {
         "level": 6,
         "id": "orange",
-        "file": "assets/images/night/night_06_orange.png"
+        "file": "assets/images/fruits/orange.png"
       },
       {
         "level": 7,
         "id": "apple",
-        "file": "assets/images/night/night_07_apple.png"
+        "file": "assets/images/fruits/apple.png"
       },
       {
         "level": 8,
         "id": "pear",
-        "file": "assets/images/night/night_08_pear.png"
+        "file": "assets/images/fruits/pear.png"
       },
       {
         "level": 9,
         "id": "peach",
-        "file": "assets/images/night/night_09_peach.png"
+        "file": "assets/images/fruits/peach.png"
       },
       {
         "level": 10,
         "id": "pineapple",
-        "file": "assets/images/night/night_10_pineapple.png"
+        "file": "assets/images/fruits/pineapple.png"
       },
       {
         "level": 11,
         "id": "watermelon",
-        "file": "assets/images/night/night_11_watermelon.png"
+        "file": "assets/images/fruits/watermelon.png"
       }
     ],
     "tropical": [
@@ -172,12 +172,12 @@
       {
         "level": 10,
         "id": "pineapple",
-        "file": "assets/images/tropical/tropical_10_pineapple.png"
+        "file": "assets/images/fruits/pineapple.png"
       },
       {
         "level": 11,
         "id": "watermelon",
-        "file": "assets/images/tropical/tropical_11_watermelon.png"
+        "file": "assets/images/fruits/watermelon.png"
       }
     ],
     "sports": [

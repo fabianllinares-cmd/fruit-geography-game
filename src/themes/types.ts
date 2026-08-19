@@ -28,5 +28,5 @@ export interface Theme {
   cssVars: Record<string, string>;
 }
 
-/** Physics radii in world units. Visual sprites are drawn at diameter 2 * radius. */
+/** Physics radii in world units. Visible sprite alpha is fitted to diameter 2 * radius. */
 export const RADII = [14, 18, 23, 28, 34, 40, 47, 55, 64, 74, 86] as const;

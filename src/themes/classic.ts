@@ -24,9 +24,14 @@ export const classicTheme: Theme = {
   },
   objects: buildObjects('classic', [
     {
-      id: 'cherry',
-      name: 'Cherry',
-      visual: { fill: '#e11d48', stroke: '#9f1239', highlight: '#fb7185', style: 'fruit' },
+      id: 'blueberry',
+      name: 'Blueberry',
+      visual: { fill: '#2563eb', stroke: '#1e3a8a', highlight: '#93c5fd', style: 'fruit' },
+    },
+    {
+      id: 'gooseberry',
+      name: 'Gooseberry',
+      visual: { fill: '#65a30d', stroke: '#3f6212', highlight: '#bef264', style: 'fruit' },
     },
     {
       id: 'strawberry',
@@ -34,19 +39,14 @@ export const classicTheme: Theme = {
       visual: { fill: '#f43f5e', stroke: '#be123c', highlight: '#fda4af', style: 'fruit' },
     },
     {
-      id: 'blueberry',
-      name: 'Blueberry',
-      visual: { fill: '#2563eb', stroke: '#1e3a8a', highlight: '#93c5fd', style: 'fruit' },
-    },
-    {
       id: 'grapes',
       name: 'Grapes',
       visual: { fill: '#7c3aed', stroke: '#5b21b6', highlight: '#c4b5fd', style: 'fruit' },
     },
     {
-      id: 'lime',
-      name: 'Lime',
-      visual: { fill: '#84cc16', stroke: '#3f6212', highlight: '#d9f99d', style: 'fruit' },
+      id: 'lemon',
+      name: 'Lemon',
+      visual: { fill: '#facc15', stroke: '#ca8a04', highlight: '#fef08a', style: 'fruit' },
     },
     {
       id: 'orange',

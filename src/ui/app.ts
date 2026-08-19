@@ -322,9 +322,13 @@ export class App {
       btn.type = 'button';
       btn.className = 'theme-card';
       const preview = spriteImg(theme.objects[0].visual.sprite, theme.objects[0].name, 'te');
+      if (theme.id === 'night') preview.classList.add('night-glow');
+      const slot = document.createElement('span');
+      slot.className = 'sprite-slot te-slot';
+      slot.append(preview);
       const copy = document.createElement('div');
       copy.innerHTML = `<b>${theme.name}</b><span>${theme.tagline}</span>`;
-      btn.append(preview, copy);
+      btn.append(slot, copy);
       btn.addEventListener('click', () => this._selectTheme(theme, true));
       grid.appendChild(btn);
     }

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   ASSET_MANIFEST,
+  CLASSIC_FRUIT_IDS,
   THEME_IDS,
   allAssetPaths,
   backgroundPath,
@@ -19,13 +20,17 @@ function publicFile(rel: string): string {
   return path.join(root, 'public', rel);
 }
 
+const CANONICAL_FILES = CLASSIC_FRUIT_IDS.map((id) => `assets/images/fruits/${id}.png`);
+
 describe('production asset pack', () => {
-  it('includes 55 sprites, 5 backgrounds, 5 buttons and 6 effects', () => {
-    expect(ASSET_MANIFEST.counts.item_sprites).toBe(55);
+  it('includes unique sprites, 5 backgrounds, 5 buttons and 6 effects', () => {
+    expect(ASSET_MANIFEST.counts.item_sprites).toBe(42);
     expect(ASSET_MANIFEST.counts.backgrounds).toBe(5);
     expect(ASSET_MANIFEST.counts.ui_buttons).toBe(5);
     expect(ASSET_MANIFEST.counts.effects).toBe(6);
-    expect(allAssetPaths()).toHaveLength(71);
+    const files = allAssetPaths();
+    expect(new Set(files).size).toBe(files.length);
+    expect(files).toHaveLength(58);
   });
 
   it('maps every theme level 1-11 to the matching PNG on disk', () => {
@@ -61,13 +66,44 @@ describe('production asset pack', () => {
     }
   });
 
-  it('starts Sports with the shuttlecock and Classic/Night with cherry', () => {
+  it('uses one canonical PNG per Classic fruit and reuses it for Night', () => {
+    expect(ASSET_MANIFEST.themes.classic.map((row) => row.id)).toEqual([...CLASSIC_FRUIT_IDS]);
+    expect(ASSET_MANIFEST.themes.night.map((row) => row.id)).toEqual([...CLASSIC_FRUIT_IDS]);
+    expect(ASSET_MANIFEST.themes.classic.map((row) => row.file)).toEqual(CANONICAL_FILES);
+    expect(ASSET_MANIFEST.themes.night.map((row) => row.file)).toEqual(CANONICAL_FILES);
     expect(ASSET_MANIFEST.themes.sports[0].id).toBe('shuttlecock');
-    expect(ASSET_MANIFEST.themes.classic.map((row) => row.id)).toEqual(
-      ASSET_MANIFEST.themes.night.map((row) => row.id),
-    );
-    expect(ASSET_MANIFEST.themes.classic[0].id).toBe('cherry');
     expect(ASSET_MANIFEST.themes.drinks[10].id).toBe('bottle');
     expect(ASSET_MANIFEST.themes.tropical[5].id).toBe('banana');
+  });
+
+  it('deduplicates only Tropical fruits that match a canonical Classic fruit', () => {
+    const tropical = ASSET_MANIFEST.themes.tropical;
+    expect(tropical.map((row) => row.id)).toEqual([
+      'raspberry',
+      'starfruit',
+      'kiwi',
+      'passionfruit',
+      'mango',
+      'banana',
+      'dragonfruit',
+      'papaya',
+      'coconut',
+      'pineapple',
+      'watermelon',
+    ]);
+    expect(tropical[9].file).toBe('assets/images/fruits/pineapple.png');
+    expect(tropical[10].file).toBe('assets/images/fruits/watermelon.png');
+    for (let i = 0; i < 9; i++) {
+      expect(tropical[i].file.startsWith('assets/images/tropical/')).toBe(true);
+      expect(CANONICAL_FILES.includes(tropical[i].file)).toBe(false);
+    }
+  });
+
+  it('removes superseded Classic, Night, and duplicate Tropical fruit files', () => {
+    expect(existsSync(publicFile('assets/images/classic/classic_01_cherry.png'))).toBe(false);
+    expect(existsSync(publicFile('assets/images/night/night_01_cherry.png'))).toBe(false);
+    expect(existsSync(publicFile('assets/images/tropical/tropical_10_pineapple.png'))).toBe(false);
+    expect(existsSync(publicFile('assets/images/tropical/tropical_11_watermelon.png'))).toBe(false);
+    expect(existsSync(publicFile('assets/images/tropical/tropical_01_raspberry.png'))).toBe(true);
   });
 });
