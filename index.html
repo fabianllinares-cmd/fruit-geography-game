@@ -2,71 +2,99 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Fruit Atlas — Merge & Conquer</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍉</text></svg>" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0f172a" />
+    <title>Fruit Geography — Merge Worlds</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍉</text></svg>"
+    />
   </head>
-  <body>
-    <div id="app">
-      <header class="topbar">
-        <div class="brand">
-          <span class="brand-emoji">🍉</span>
-          <div class="brand-text">
-            <h1>Fruit Atlas</h1>
-            <p>Merge fruit. Master geography.</p>
+  <body data-screen="menu">
+    <!-- ============ MENU / THEME SELECT ============ -->
+    <section id="screen-menu" class="screen">
+      <div class="menu-inner">
+        <header class="menu-head">
+          <div class="logo">🌍🍉</div>
+          <h1>Fruit Geography</h1>
+          <p class="menu-sub">Drop, merge &amp; grow — then ace the geography.</p>
+        </header>
+
+        <h2 class="menu-label">Choose a world</h2>
+        <div class="theme-grid" id="theme-grid"></div>
+
+        <p class="menu-foot">
+          Tap a world to play · <span id="menu-best-note">Best scores are saved on this device</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ GAME ============ -->
+    <section id="screen-game" class="screen" hidden>
+      <header class="hud">
+        <button class="icon-btn" id="back-btn" aria-label="Back to menu">‹</button>
+        <div class="hud-stats">
+          <div class="hud-stat">
+            <span class="hud-label">Score</span>
+            <span class="hud-value" id="score">0</span>
+          </div>
+          <div class="hud-stat">
+            <span class="hud-label">Best</span>
+            <span class="hud-value" id="best">0</span>
           </div>
         </div>
-        <div class="stats">
-          <div class="stat">
-            <span class="stat-label">Score</span>
-            <span class="stat-value" id="score">0</span>
-          </div>
-          <div class="stat">
-            <span class="stat-label">Best</span>
-            <span class="stat-value" id="best">0</span>
-          </div>
+        <div class="hud-next" id="next-chip">
+          <span class="hud-label">Next</span>
+          <canvas id="next-canvas" width="72" height="72"></canvas>
         </div>
       </header>
 
-      <main class="game-area">
-        <section class="board-wrap">
-          <canvas id="board" width="420" height="620"></canvas>
-          <div class="next-chip" id="next-chip">
-            <span class="next-label">Next</span>
-            <span class="next-emoji" id="next-emoji">🍒</span>
-          </div>
-          <div class="game-over" id="game-over" hidden>
-            <div class="game-over-card">
-              <h2>Game Over</h2>
-              <p id="final-score">Score: 0</p>
-              <button id="restart" class="btn btn-primary">Play again</button>
+      <div class="stage">
+        <canvas id="board"></canvas>
+        <div class="danger-flash" id="danger-flash"></div>
+
+        <!-- Game over -->
+        <div class="overlay" id="overlay-gameover" hidden>
+          <div class="card">
+            <h2>Game Over</h2>
+            <p class="card-score" id="final-score">Score: 0</p>
+            <p class="card-sub" id="final-best"></p>
+            <div class="card-actions">
+              <button class="btn btn-primary" id="restart">Play again</button>
+              <button class="btn btn-ghost" id="to-menu">Change world</button>
             </div>
           </div>
-        </section>
+        </div>
 
-        <aside class="sidebar">
-          <div class="panel">
-            <h3>Geography power-ups</h3>
-            <p class="panel-hint">Merge fruit to charge the globe. Spend charge to bend the planet to your will.</p>
-            <div class="charge">
-              <div class="charge-bar"><span id="charge-fill"></span></div>
-              <span class="charge-text"><span id="charge-value">0</span>/100 charge</span>
-            </div>
-            <div class="powerups" id="powerups"></div>
+        <!-- Geography question -->
+        <div class="overlay" id="overlay-geo" hidden>
+          <div class="card geo-card">
+            <span class="geo-badge">🌍 Geo Challenge</span>
+            <h2 class="geo-q" id="geo-question">Question?</h2>
+            <div class="geo-options" id="geo-options"></div>
+            <p class="geo-feedback" id="geo-feedback" hidden></p>
           </div>
+        </div>
+      </div>
 
-          <div class="panel">
-            <h3>Fruit atlas</h3>
-            <p class="panel-hint">Every fruit hails from a top-producing country.</p>
-            <ul class="atlas" id="atlas"></ul>
-          </div>
-        </aside>
-      </main>
-
-      <footer class="footer">
-        <span>Move to aim · Click / tap to drop · <kbd>Space</kbd> drop · <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> power-ups</span>
+      <footer class="controls">
+        <div class="charge">
+          <div class="charge-bar"><span id="charge-fill"></span></div>
+          <span class="charge-text"><span id="charge-value">0</span>/100</span>
+        </div>
+        <div class="action-row">
+          <div class="powerups" id="powerups"></div>
+          <button class="geo-btn" id="geo-btn">
+            <span class="geo-btn-emoji">🌍</span>
+            <span class="geo-btn-label">Geo</span>
+          </button>
+        </div>
       </footer>
-    </div>
+    </section>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

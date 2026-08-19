@@ -1,28 +1,42 @@
 import Matter from 'matter-js';
-import { FRUITS, MAX_DROP_TIER, POWERUPS } from './data.js';
+import { POWERUPS, DROP_TIERS, DROP_WEIGHTS } from './themes.js';
+import { drawBackground, drawDangerLine, drawPiece } from './render.js';
 
 const { Engine, World, Bodies, Body, Composite, Events } = Matter;
 
-const WALL = 12;
-const DROP_Y = 60;
-const DANGER_Y = 110;
+// Fixed logical play-field. The canvas backing store is scaled to the device,
+// but all physics + layout math uses these units, so behaviour is identical on
+// every screen and deterministic for tests.
+export const BOARD = { W: 440, H: 660 };
+
+const WALL = 16;
+const DROP_Y = 54;
+const DANGER_Y = Math.round(BOARD.H * 0.17);
+const MAX_SPEED = 34; // clamp to prevent tunnelling through walls
 
 export class Game {
-  constructor(canvas, callbacks = {}) {
+  constructor(canvas, theme, callbacks = {}) {
     this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
-    this.width = canvas.width;
-    this.height = canvas.height;
+    this.theme = theme;
+    this.levels = theme.levels;
     this.on = callbacks;
+    this.width = BOARD.W;
+    this.height = BOARD.H;
+
+    this._setupCanvas();
 
     this.engine = Engine.create();
-    this.engine.gravity.y = 1.2;
+    this.engine.gravity.y = 1.25;
+    this.engine.positionIterations = 10;
+    this.engine.velocityIterations = 8;
     this.world = this.engine.world;
 
     this.score = 0;
     this.charge = 0;
     this.maxCharge = 100;
+    this.maxTierReached = 0;
     this.running = false;
+    this.paused = false;
     this.gameOver = false;
     this.dropX = this.width / 2;
     this.canDrop = true;
@@ -35,67 +49,83 @@ export class Game {
     this._bindPhysics();
   }
 
+  _setupCanvas() {
+    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+    this.dpr = dpr;
+    this.canvas.width = Math.round(this.width * dpr);
+    this.canvas.height = Math.round(this.height * dpr);
+    this.ctx = this.canvas.getContext('2d');
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
   _pickDropTier() {
-    return Math.floor(Math.random() * MAX_DROP_TIER);
+    const weights = DROP_WEIGHTS.slice(0, DROP_TIERS);
+    const total = weights.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < weights.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return i;
+    }
+    return 0;
   }
 
   _buildBounds() {
-    const opts = { isStatic: true, restitution: 0.2, friction: 0.6, render: {} };
-    const floor = Bodies.rectangle(this.width / 2, this.height - WALL / 2, this.width, WALL, opts);
-    const left = Bodies.rectangle(WALL / 2, this.height / 2, WALL, this.height, opts);
-    const right = Bodies.rectangle(this.width - WALL / 2, this.height / 2, WALL, this.height, opts);
-    floor.label = 'wall';
-    left.label = 'wall';
-    right.label = 'wall';
+    const opts = { isStatic: true, restitution: 0.1, friction: 0.6 };
+    const floor = Bodies.rectangle(this.width / 2, this.height + WALL / 2 - 2, this.width * 2, WALL, opts);
+    const left = Bodies.rectangle(-WALL / 2 + 2, this.height / 2, WALL, this.height * 2, opts);
+    const right = Bodies.rectangle(this.width + WALL / 2 - 2, this.height / 2, WALL, this.height * 2, opts);
+    for (const b of [floor, left, right]) b.label = 'wall';
     World.add(this.world, [floor, left, right]);
   }
 
   _bindPhysics() {
     Events.on(this.engine, 'collisionStart', (evt) => {
-      for (const pair of evt.pairs) {
-        this._tryMerge(pair.bodyA, pair.bodyB);
-      }
+      for (const pair of evt.pairs) this._tryMerge(pair.bodyA, pair.bodyB);
     });
   }
 
   _tryMerge(a, b) {
-    if (!a.isFruit || !b.isFruit) return;
+    if (!a.isPiece || !b.isPiece) return;
     if (this.mergedThisTick.has(a.id) || this.mergedThisTick.has(b.id)) return;
     if (a.tier !== b.tier) return;
-    if (a.tier >= FRUITS.length - 1) return;
+    const level = this.levels[a.tier];
+    if (level.next == null) return;
 
     this.mergedThisTick.add(a.id);
     this.mergedThisTick.add(b.id);
 
-    const nextTier = a.tier + 1;
+    const nextTier = level.next;
     const x = (a.position.x + b.position.x) / 2;
     const y = (a.position.y + b.position.y) / 2;
 
     World.remove(this.world, a);
     World.remove(this.world, b);
 
-    const merged = this._makeFruit(nextTier, x, y);
+    const merged = this._makePiece(nextTier, x, y);
     World.add(this.world, merged);
-    Body.setVelocity(merged, { x: 0, y: -2 });
+    Body.setVelocity(merged, { x: 0, y: -1.6 });
 
-    const gained = FRUITS[nextTier].score;
+    const gained = this.levels[nextTier].score;
     this.score += gained;
-    this.charge = Math.min(this.maxCharge, this.charge + 6 + nextTier * 2);
-    this.on.onScore?.(this.score, gained, FRUITS[nextTier]);
+    this.maxTierReached = Math.max(this.maxTierReached, nextTier);
+    this.charge = Math.min(this.maxCharge, this.charge + 5 + nextTier * 2);
+    this.on.onMerge?.(nextTier, this.levels[nextTier], { x, y });
+    this.on.onScore?.(this.score, gained, this.levels[nextTier]);
     this.on.onCharge?.(this.charge);
   }
 
-  _makeFruit(tier, x, y) {
-    const def = FRUITS[tier];
-    const body = Bodies.circle(x, y, def.radius, {
-      restitution: 0.18,
-      friction: 0.45,
+  _makePiece(tier, x, y) {
+    const level = this.levels[tier];
+    const body = Bodies.circle(x, y, level.radius, {
+      restitution: 0.12,
+      friction: 0.4,
       frictionStatic: 0.6,
       density: 0.001,
+      slop: 0.02,
     });
-    body.isFruit = true;
+    body.isPiece = true;
     body.tier = tier;
-    body.label = 'fruit';
+    body.label = 'piece';
     return body;
   }
 
@@ -110,68 +140,75 @@ export class Game {
 
   reset() {
     Composite.allBodies(this.world)
-      .filter((b) => b.isFruit)
+      .filter((b) => b.isPiece)
       .forEach((b) => World.remove(this.world, b));
     this.score = 0;
     this.charge = 0;
+    this.maxTierReached = 0;
     this.gameOver = false;
+    this.paused = false;
     this.canDrop = true;
     this.dangerTimer = 0;
     this.current = this._pickDropTier();
     this.next = this._pickDropTier();
     this.on.onScore?.(this.score, 0, null);
     this.on.onCharge?.(this.charge);
-    this.on.onNext?.(FRUITS[this.next]);
+    this.on.onNext?.(this.levels[this.next], this.levels[this.current]);
     if (!this.running) this.start();
   }
 
+  pause() {
+    this.paused = true;
+  }
+
+  resume() {
+    this.paused = false;
+    this._last = performance.now();
+  }
+
   setDropX(x) {
-    const def = FRUITS[this.current];
-    const min = WALL + def.radius;
-    const max = this.width - WALL - def.radius;
+    const level = this.levels[this.current];
+    const min = WALL + level.radius;
+    const max = this.width - WALL - level.radius;
     this.dropX = Math.max(min, Math.min(max, x));
   }
 
   drop() {
-    if (!this.canDrop || this.gameOver) return;
-    const tier = this.current;
-    const def = FRUITS[tier];
-    const body = this._makeFruit(tier, this.dropX, DROP_Y);
+    if (!this.canDrop || this.gameOver || this.paused) return;
+    const body = this._makePiece(this.current, this.dropX, DROP_Y);
     World.add(this.world, body);
     this.canDrop = false;
     this.current = this.next;
     this.next = this._pickDropTier();
-    this.on.onNext?.(FRUITS[this.next]);
+    this.on.onNext?.(this.levels[this.next], this.levels[this.current]);
     setTimeout(() => {
       this.canDrop = true;
-    }, 450);
+    }, 420);
   }
 
   usePowerup(id) {
     const power = POWERUPS.find((p) => p.id === id);
-    if (!power || this.gameOver) return false;
+    if (!power || this.gameOver || this.paused) return false;
     if (this.charge < power.cost) return false;
 
-    const fruits = Composite.allBodies(this.world).filter((b) => b.isFruit);
+    const pieces = Composite.allBodies(this.world).filter((b) => b.isPiece);
     if (id === 'earthquake') {
-      for (const f of fruits) {
-        Body.setVelocity(f, {
-          x: (Math.random() - 0.5) * 22,
-          y: -Math.random() * 14,
-        });
+      for (const f of pieces) {
+        Body.setVelocity(f, { x: (Math.random() - 0.5) * 20, y: -Math.random() * 12 });
       }
     } else if (id === 'volcano') {
-      if (fruits.length) {
-        const biggest = fruits.reduce((m, f) => (f.tier > m.tier ? f : m), fruits[0]);
-        this.score += FRUITS[biggest.tier].score * 2;
+      if (pieces.length) {
+        const biggest = pieces.reduce((m, f) => (f.tier > m.tier ? f : m), pieces[0]);
+        const bonus = this.levels[biggest.tier].score * 2;
+        this.score += bonus;
         World.remove(this.world, biggest);
-        this.on.onScore?.(this.score, FRUITS[biggest.tier].score * 2, FRUITS[biggest.tier]);
+        this.on.onScore?.(this.score, bonus, this.levels[biggest.tier]);
       }
     } else if (id === 'drift') {
       const cx = this.width / 2;
-      for (const f of fruits) {
+      for (const f of pieces) {
         const dir = f.position.x < cx ? 1 : -1;
-        Body.applyForce(f, f.position, { x: dir * 0.06 * f.mass, y: -0.01 * f.mass });
+        Body.applyForce(f, f.position, { x: dir * 0.05 * f.mass, y: -0.008 * f.mass });
       }
     }
 
@@ -180,16 +217,44 @@ export class Game {
     return true;
   }
 
+  // Reward for answering a geography question. Correct answers grant score and
+  // power-up charge; wrong answers give nothing.
+  applyGeoResult(correct) {
+    if (correct) {
+      const bonus = 25 + this.maxTierReached * 5;
+      this.score += bonus;
+      this.charge = Math.min(this.maxCharge, this.charge + 30);
+      this.on.onScore?.(this.score, bonus, null);
+      this.on.onCharge?.(this.charge);
+      return bonus;
+    }
+    return 0;
+  }
+
+  _clampSpeeds() {
+    for (const b of Composite.allBodies(this.world)) {
+      if (!b.isPiece) continue;
+      const v = b.velocity;
+      const sp = Math.hypot(v.x, v.y);
+      if (sp > MAX_SPEED) {
+        const s = MAX_SPEED / sp;
+        Body.setVelocity(b, { x: v.x * s, y: v.y * s });
+      }
+    }
+  }
+
   _checkGameOver(dt) {
-    const fruits = Composite.allBodies(this.world).filter((b) => b.isFruit);
-    const overLine = fruits.some(
-      (f) => f.position.y - FRUITS[f.tier].radius < DANGER_Y && Math.abs(f.velocity.y) < 0.4
+    const pieces = Composite.allBodies(this.world).filter((b) => b.isPiece);
+    const overLine = pieces.some(
+      (f) => f.position.y - this.levels[f.tier].radius < DANGER_Y && Math.abs(f.velocity.y) < 0.45
     );
     if (overLine) {
       this.dangerTimer += dt;
-      if (this.dangerTimer > 1600) this._endGame();
-    } else {
-      this.dangerTimer = Math.max(0, this.dangerTimer - dt);
+      this.on.onDanger?.(Math.min(1, this.dangerTimer / 2200));
+      if (this.dangerTimer > 2200) this._endGame();
+    } else if (this.dangerTimer > 0) {
+      this.dangerTimer = Math.max(0, this.dangerTimer - dt * 1.5);
+      this.on.onDanger?.(Math.min(1, this.dangerTimer / 2200));
     }
   }
 
@@ -202,7 +267,8 @@ export class Game {
     const dt = Math.min(32, now - this._last);
     this._last = now;
     this.mergedThisTick.clear();
-    if (!this.gameOver) {
+    if (!this.gameOver && !this.paused) {
+      this._clampSpeeds();
       Engine.update(this.engine, dt);
       this._checkGameOver(dt);
     }
@@ -212,73 +278,27 @@ export class Game {
 
   _render() {
     const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.width, this.height);
+    drawBackground(ctx, this.theme, this.width, this.height);
+    drawDangerLine(ctx, this.theme, WALL, this.width - WALL, DANGER_Y, this.dangerTimer > 0);
 
-    // danger line
-    ctx.save();
-    ctx.setLineDash([6, 8]);
-    ctx.strokeStyle = this.dangerTimer > 0 ? 'rgba(255,80,80,0.9)' : 'rgba(255,255,255,0.28)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(WALL, DANGER_Y);
-    ctx.lineTo(this.width - WALL, DANGER_Y);
-    ctx.stroke();
-    ctx.restore();
-
-    // drop preview
-    if (this.canDrop && !this.gameOver) {
-      const def = FRUITS[this.current];
+    if (this.canDrop && !this.gameOver && !this.paused) {
+      const level = this.levels[this.current];
       ctx.save();
-      ctx.globalAlpha = 0.28;
-      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-      ctx.setLineDash([4, 6]);
+      ctx.globalAlpha = 0.22;
+      ctx.strokeStyle = this.theme.canvas.danger;
+      ctx.setLineDash([4, 7]);
       ctx.beginPath();
       ctx.moveTo(this.dropX, DROP_Y);
       ctx.lineTo(this.dropX, this.height - WALL);
       ctx.stroke();
       ctx.restore();
-      this._drawFruit(this.dropX, DROP_Y, def, 0);
+      drawPiece(ctx, level, this.dropX, DROP_Y, level.radius, 0, this.theme);
     }
 
     for (const body of Composite.allBodies(this.world)) {
-      if (body.isFruit) {
-        this._drawFruit(body.position.x, body.position.y, FRUITS[body.tier], body.angle);
+      if (body.isPiece) {
+        drawPiece(ctx, this.levels[body.tier], body.position.x, body.position.y, this.levels[body.tier].radius, body.angle, this.theme);
       }
     }
-  }
-
-  _drawFruit(x, y, def, angle) {
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.beginPath();
-    ctx.arc(0, 0, def.radius, 0, Math.PI * 2);
-    const grad = ctx.createRadialGradient(-def.radius * 0.3, -def.radius * 0.3, def.radius * 0.2, 0, 0, def.radius);
-    grad.addColorStop(0, '#ffffff');
-    grad.addColorStop(0.25, def.color);
-    grad.addColorStop(1, this._shade(def.color, -0.25));
-    ctx.fillStyle = grad;
-    ctx.fill();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-    ctx.stroke();
-
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(def.radius * 1.15)}px "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(def.emoji, 0, def.radius * 0.06);
-    ctx.restore();
-  }
-
-  _shade(hex, amt) {
-    const n = parseInt(hex.slice(1), 16);
-    let r = (n >> 16) & 255;
-    let g = (n >> 8) & 255;
-    let b = n & 255;
-    r = Math.max(0, Math.min(255, Math.round(r + r * amt)));
-    g = Math.max(0, Math.min(255, Math.round(g + g * amt)));
-    b = Math.max(0, Math.min(255, Math.round(b + b * amt)));
-    return `rgb(${r},${g},${b})`;
   }
 }
