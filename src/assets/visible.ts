@@ -18,6 +18,20 @@ export const NIGHT_GLOW_FILTER =
 
 const ALPHA_MIN = 10;
 
+/** Opaque black backing used as a matte in some supplied fruit PNGs. */
+export const BLACK_MATTE_MAX = 8;
+
+export function isBlackMatte(r: number, g: number, b: number): boolean {
+  return r <= BLACK_MATTE_MAX && g <= BLACK_MATTE_MAX && b <= BLACK_MATTE_MAX;
+}
+
+/** Zero alpha on near-black pixels so a black canvas backing is not drawn. */
+export function keyBlackMatte(data: Uint8ClampedArray | Uint8Array): void {
+  for (let i = 0; i < data.length; i += 4) {
+    if (isBlackMatte(data[i], data[i + 1], data[i + 2])) data[i + 3] = 0;
+  }
+}
+
 /** Tight AABB of pixels whose alpha is above the cutoff. */
 export function visibleBoundsFromRgba(
   data: Uint8ClampedArray | Uint8Array,
@@ -72,4 +86,14 @@ export function trimInsets(bounds: VisibleBounds, canvasW: number, canvasH: numb
   const bottom = (canvasH - bounds.y - bounds.h) / canvasH;
   const scale = Math.max(canvasW, canvasH) / Math.max(bounds.w, bounds.h);
   return { top, right, bottom, left, scale };
+}
+
+export function sourceSize(img: CanvasImageSource): { w: number; h: number } {
+  if ('naturalWidth' in img && typeof img.naturalWidth === 'number' && img.naturalWidth > 0) {
+    return { w: img.naturalWidth, h: img.naturalHeight };
+  }
+  if ('width' in img && typeof img.width === 'number') {
+    return { w: img.width, h: img.height };
+  }
+  return { w: 0, h: 0 };
 }

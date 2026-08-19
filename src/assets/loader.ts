@@ -1,8 +1,10 @@
 import { allAssetPaths, assetUrl } from './catalog';
-import { visibleBoundsFromRgba, type VisibleBounds } from './visible';
+import { keyBlackMatte, visibleBoundsFromRgba, type VisibleBounds } from './visible';
 
 const cache = new Map<string, HTMLImageElement>();
 const boundsCache = new Map<string, VisibleBounds | null>();
+const displayCache = new Map<string, HTMLCanvasElement>();
+const displayUrlCache = new Map<string, string>();
 let preloadPromise: Promise<void> | null = null;
 
 export function getSprite(relPath: string): HTMLImageElement | null {
@@ -21,24 +23,32 @@ export function isSpriteReady(relPath: string): boolean {
   return Boolean(img && img.complete && img.naturalWidth > 0);
 }
 
+export function getDisplaySprite(relPath: string): CanvasImageSource | null {
+  return displayCache.get(relPath) ?? getSprite(relPath);
+}
+
+export function getDisplayUrl(relPath: string): string | null {
+  return displayUrlCache.get(relPath) ?? null;
+}
+
 export function getVisibleBounds(relPath: string, img?: HTMLImageElement | null): VisibleBounds | null {
   if (boundsCache.has(relPath)) return boundsCache.get(relPath) ?? null;
   const sprite = img ?? getSprite(relPath);
   if (!sprite || !sprite.complete || sprite.naturalWidth < 1) return null;
-  const bounds = measureImage(sprite);
-  boundsCache.set(relPath, bounds);
-  return bounds;
+  return prepareSprite(relPath, sprite);
 }
 
 export function rememberVisibleBounds(relPath: string, img: HTMLImageElement): VisibleBounds | null {
   if (boundsCache.has(relPath)) return boundsCache.get(relPath) ?? null;
   if (!img.complete || img.naturalWidth < 1) return null;
-  const bounds = measureImage(img);
-  boundsCache.set(relPath, bounds);
-  return bounds;
+  return prepareSprite(relPath, img);
 }
 
-function measureImage(img: HTMLImageElement): VisibleBounds | null {
+export function usesBlackMatteKey(relPath: string): boolean {
+  return relPath.includes('/fruits/');
+}
+
+function prepareSprite(relPath: string, img: HTMLImageElement): VisibleBounds | null {
   if (typeof document === 'undefined') return null;
   const canvas = document.createElement('canvas');
   canvas.width = img.naturalWidth;
@@ -46,17 +56,26 @@ function measureImage(img: HTMLImageElement): VisibleBounds | null {
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) return null;
   ctx.drawImage(img, 0, 0);
+  let bounds: VisibleBounds | null = {
+    x: 0,
+    y: 0,
+    w: img.naturalWidth,
+    h: img.naturalHeight,
+  };
   try {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    return visibleBoundsFromRgba(imageData.data, canvas.width, canvas.height);
+    if (usesBlackMatteKey(relPath)) {
+      keyBlackMatte(imageData.data);
+      ctx.putImageData(imageData, 0, 0);
+      displayCache.set(relPath, canvas);
+      displayUrlCache.set(relPath, canvas.toDataURL('image/png'));
+    }
+    bounds = visibleBoundsFromRgba(imageData.data, canvas.width, canvas.height) ?? bounds;
   } catch {
-    return {
-      x: 0,
-      y: 0,
-      w: img.naturalWidth,
-      h: img.naturalHeight,
-    };
+    // Tainted canvas: keep the original pixels and full-frame bounds.
   }
+  boundsCache.set(relPath, bounds);
+  return bounds;
 }
 
 export function preloadAssets(): Promise<void> {

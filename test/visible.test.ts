@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { NIGHT_GLOW_FILTER, fitDestRect, trimInsets, visibleBoundsFromRgba } from '../src/assets/visible';
+import {
+  NIGHT_GLOW_FILTER,
+  fitDestRect,
+  keyBlackMatte,
+  trimInsets,
+  visibleBoundsFromRgba,
+} from '../src/assets/visible';
 
 describe('visible sprite bounds', () => {
   it('finds the opaque silhouette instead of the canvas padding', () => {
@@ -42,5 +48,29 @@ describe('visible sprite bounds', () => {
     expect(inset.right).toBeCloseTo(0.1);
     expect(inset.bottom).toBeCloseTo(0.2);
     expect(inset.scale).toBeCloseTo(100 / 80);
+  });
+
+  it('keys opaque black matte pixels out of the visible silhouette', () => {
+    const width = 6;
+    const height = 6;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const setPx = (x: number, y: number, r: number, g: number, b: number, a: number) => {
+      const i = (y * width + x) * 4;
+      data[i] = r;
+      data[i + 1] = g;
+      data[i + 2] = b;
+      data[i + 3] = a;
+    };
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) setPx(x, y, 0, 0, 0, 255);
+    }
+    setPx(2, 2, 40, 90, 220, 255);
+    setPx(3, 2, 40, 90, 220, 255);
+    setPx(2, 3, 40, 90, 220, 255);
+    setPx(3, 3, 40, 90, 220, 255);
+    keyBlackMatte(data);
+    const bounds = visibleBoundsFromRgba(data, width, height);
+    expect(bounds).toEqual({ x: 2, y: 2, w: 2, h: 2 });
+    expect(data[3]).toBe(0);
   });
 });
