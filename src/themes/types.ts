@@ -29,7 +29,8 @@ export interface Theme {
 }
 
 /**
- * Physics radii in world units. Sprites draw slightly larger than this circle
- * so fruits nest with less empty collision padding.
+ * Physics radii in world units. Sprites draw larger than this circle
+ * so fruits nest with less empty collision padding. Strawberry (index 2)
+ * is boosted so it reads clearly larger than gooseberry.
  */
-export const RADII = [11, 14, 20, 24, 28, 33, 39, 45, 53, 62, 72] as const;
+export const RADII = [10, 12, 21, 24, 28, 33, 39, 46, 54, 63, 73] as const;

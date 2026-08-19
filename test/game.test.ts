@@ -104,8 +104,9 @@ describe('power-ups', () => {
     const before = engine.fruits().length;
     engine.earthquake();
     expect(engine.fruits()).toHaveLength(before);
-    const kicked = engine.fruits().filter((b) => Math.abs(b.velocity.x) + Math.abs(b.velocity.y) > 8);
+    const kicked = engine.fruits().filter((b) => Math.abs(b.velocity.x) + Math.abs(b.velocity.y) > 20);
     expect(kicked.length).toBeGreaterThan(0);
+    expect(engine.fruits().every((b) => b.velocity.y < -20)).toBe(true);
   });
 
   it('remove-small deletes the lowest-level objects on the board', () => {

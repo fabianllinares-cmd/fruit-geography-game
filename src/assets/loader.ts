@@ -56,6 +56,27 @@ export function usesContactShadowKey(relPath: string): boolean {
   return relPath.endsWith('/fruits/apple.png') || relPath.endsWith('/fruits/orange.png');
 }
 
+function cropToBounds(source: HTMLCanvasElement, bounds: VisibleBounds): HTMLCanvasElement {
+  const cropped = document.createElement('canvas');
+  cropped.width = Math.max(1, bounds.w);
+  cropped.height = Math.max(1, bounds.h);
+  const ctx = cropped.getContext('2d');
+  if (ctx) {
+    ctx.drawImage(
+      source,
+      bounds.x,
+      bounds.y,
+      bounds.w,
+      bounds.h,
+      0,
+      0,
+      cropped.width,
+      cropped.height,
+    );
+  }
+  return cropped;
+}
+
 function prepareSprite(relPath: string, img: HTMLImageElement): VisibleBounds | null {
   if (typeof document === 'undefined') return null;
   const canvas = document.createElement('canvas');
@@ -80,10 +101,14 @@ function prepareSprite(relPath: string, img: HTMLImageElement): VisibleBounds | 
         keyBottomRimHighlight(imageData.data, canvas.width, canvas.height);
       }
       ctx.putImageData(imageData, 0, 0);
-      displayCache.set(relPath, canvas);
-      displayUrlCache.set(relPath, canvas.toDataURL('image/png'));
     }
     bounds = visibleBoundsFromRgba(imageData.data, canvas.width, canvas.height) ?? bounds;
+    if (usesBlackMatteKey(relPath)) {
+      const cropped = cropToBounds(canvas, bounds);
+      displayCache.set(relPath, cropped);
+      displayUrlCache.set(relPath, cropped.toDataURL('image/png'));
+      bounds = { x: 0, y: 0, w: cropped.width, h: cropped.height };
+    }
   } catch {
     // Tainted canvas: keep the original pixels and full-frame bounds.
   }

@@ -284,10 +284,13 @@ export class MergeEngine {
   earthquake(): void {
     for (const fruit of this.fruits()) {
       Matter.Sleeping.set(fruit, false);
-      const kickX = (this.random() - 0.5) * 36;
-      const kickY = -12 - this.random() * 18;
-      Body.setVelocity(fruit, { x: kickX, y: kickY });
-      Body.setAngularVelocity(fruit, (this.random() - 0.5) * 0.45);
+      const kickX = (this.random() - 0.5) * 64;
+      const kickY = -28 - this.random() * 42;
+      Body.setVelocity(fruit, {
+        x: fruit.velocity.x * 0.15 + kickX,
+        y: fruit.velocity.y * 0.15 + kickY,
+      });
+      Body.setAngularVelocity(fruit, (this.random() - 0.5) * 0.9);
     }
   }
 

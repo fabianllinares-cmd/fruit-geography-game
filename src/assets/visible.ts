@@ -43,13 +43,14 @@ function saturationAndLuma(r: number, g: number, b: number): { sat: number; lum:
 function isContactShadowPixel(r: number, g: number, b: number, a: number): boolean {
   if (a <= 8) return false;
   const { sat, lum } = saturationAndLuma(r, g, b);
-  return sat < 70 && lum > 140;
+  // Apple/orange rims sit around sat 70-105, not fully grey.
+  return sat < 108 && lum > 118;
 }
 
 function isNearWhiteFringe(r: number, g: number, b: number, a: number): boolean {
   if (a <= 8) return false;
   const { sat, lum } = saturationAndLuma(r, g, b);
-  return sat < 40 && lum > 170;
+  return sat < 55 && lum > 155;
 }
 
 /**
@@ -67,8 +68,8 @@ export function keyContactShadow(
   const y0 = bounds.y;
   const x1 = bounds.x + bounds.w;
   const y1 = bounds.y + bounds.h;
-  const ySeed = y0 + Math.floor(bounds.h * 0.8);
-  const yLimit = y0 + Math.floor(bounds.h * 0.5);
+  const ySeed = y0 + Math.floor(bounds.h * 0.72);
+  const yLimit = y0 + Math.floor(bounds.h * 0.42);
   const seen = new Uint8Array(width * height);
   const stack: number[] = [];
 
@@ -111,7 +112,7 @@ export function keyNearWhiteFringe(data: Uint8ClampedArray | Uint8Array): void {
   }
 }
 
-/** Remove the remaining bright crescent along the bottom silhouette. */
+/** Remove the remaining bright crescent and muddy grey-brown blend at the bottom. */
 export function keyBottomRimHighlight(
   data: Uint8ClampedArray | Uint8Array,
   width: number,
@@ -119,14 +120,18 @@ export function keyBottomRimHighlight(
 ): void {
   const bounds = visibleBoundsFromRgba(data, width, height);
   if (!bounds) return;
-  const yFrom = bounds.y + Math.floor(bounds.h * 0.86);
   const x1 = bounds.x + bounds.w;
   const y1 = bounds.y + bounds.h;
-  for (let y = yFrom; y < y1; y++) {
+  const yPaleFrom = bounds.y + Math.floor(bounds.h * 0.76);
+  const yMudFrom = bounds.y + Math.floor(bounds.h * 0.88);
+  for (let y = yPaleFrom; y < y1; y++) {
     for (let x = bounds.x; x < x1; x++) {
       const i = (y * width + x) * 4;
+      if (data[i + 3] <= 8) continue;
       const { sat, lum } = saturationAndLuma(data[i], data[i + 1], data[i + 2]);
-      if (data[i + 3] > 8 && sat < 90 && lum > 150) data[i + 3] = 0;
+      const pale = sat < 115 && lum > 120;
+      const mud = y >= yMudFrom && sat < 125 && lum > 88;
+      if (pale || mud) data[i + 3] = 0;
     }
   }
 }
@@ -157,8 +162,17 @@ export function visibleBoundsFromRgba(
   return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
 }
 
-/** Draw the fruit a bit larger than its collision circle so piles nest. */
-export const VISUAL_RADIUS_SCALE = 1.22;
+/** Draw fruits larger than their collision circles so piles nest with less air gap. */
+export const VISUAL_RADIUS_SCALE = 1.4;
+
+const SPRITE_VISUAL_BOOST: Record<string, number> = {
+  'assets/images/fruits/strawberry.png': 1.22,
+};
+
+/** Extra visual scale for sprites that otherwise read smaller than the next-smaller fruit. */
+export function visualScaleForSprite(relPath: string): number {
+  return VISUAL_RADIUS_SCALE * (SPRITE_VISUAL_BOOST[relPath] ?? 1);
+}
 
 /**
  * Map visible artwork onto the physics circle.

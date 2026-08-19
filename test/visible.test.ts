@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   NIGHT_GLOW_FILTER,
+  VISUAL_RADIUS_SCALE,
   fitDestRect,
   keyBlackMatte,
+  keyBottomRimHighlight,
   keyContactShadow,
   keyNearWhiteFringe,
   trimInsets,
   visibleBoundsFromRgba,
+  visualScaleForSprite,
 } from '../src/assets/visible';
 
 describe('visible sprite bounds', () => {
@@ -42,10 +45,17 @@ describe('visible sprite bounds', () => {
   });
 
   it('draws a wide strawberry larger than a tall gooseberry at the next-smaller radius', () => {
-    const goose = fitDestRect(749, 900, 14);
-    const straw = fitDestRect(394, 477, 20);
-    expect(straw.h).toBeGreaterThan(goose.h);
-    expect(straw.w).toBeGreaterThan(goose.w);
+    const goose = fitDestRect(749, 900, 12 * visualScaleForSprite('assets/images/fruits/gooseberry.png'));
+    const straw = fitDestRect(394, 477, 21 * visualScaleForSprite('assets/images/fruits/strawberry.png'));
+    expect(straw.h).toBeGreaterThan(goose.h * 1.4);
+    expect(straw.w).toBeGreaterThan(goose.w * 1.4);
+  });
+
+  it('draws sprites larger than their collision circles so piles can nest', () => {
+    expect(VISUAL_RADIUS_SCALE).toBeGreaterThanOrEqual(1.4);
+    expect(visualScaleForSprite('assets/images/fruits/strawberry.png')).toBeGreaterThan(
+      visualScaleForSprite('assets/images/fruits/gooseberry.png'),
+    );
   });
 
   it('keeps Night glow as alpha drop-shadows rather than a box glow', () => {
@@ -100,6 +110,29 @@ describe('visible sprite bounds', () => {
     for (let x = 2; x <= 5; x++) setPx(x, 6, 240, 238, 230, 255);
     for (let x = 3; x <= 4; x++) setPx(x, 7, 250, 250, 245, 255);
     keyContactShadow(data, width, height);
+    expect(data[(6 * width + 3) * 4 + 3]).toBe(0);
+    expect(data[(7 * width + 3) * 4 + 3]).toBe(0);
+    expect(data[(3 * width + 3) * 4 + 3]).toBe(255);
+  });
+
+  it('keys the beige bottom rim left after the pale oval is removed', () => {
+    const width = 8;
+    const height = 8;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const setPx = (x: number, y: number, r: number, g: number, b: number, a: number) => {
+      const i = (y * width + x) * 4;
+      data[i] = r;
+      data[i + 1] = g;
+      data[i + 2] = b;
+      data[i + 3] = a;
+    };
+    for (let y = 1; y <= 5; y++) {
+      for (let x = 2; x <= 5; x++) setPx(x, y, 220, 80, 20, 255);
+    }
+    for (let x = 2; x <= 5; x++) setPx(x, 6, 180, 130, 126, 255);
+    for (let x = 3; x <= 4; x++) setPx(x, 7, 244, 243, 239, 255);
+    keyContactShadow(data, width, height);
+    keyBottomRimHighlight(data, width, height);
     expect(data[(6 * width + 3) * 4 + 3]).toBe(0);
     expect(data[(7 * width + 3) * 4 + 3]).toBe(0);
     expect(data[(3 * width + 3) * 4 + 3]).toBe(255);
