@@ -1,5 +1,5 @@
 import { allAssetPaths, assetUrl } from './catalog';
-import { keyBlackMatte, keyBottomRimHighlight, keyContactShadow, keyNearWhiteFringe, visibleBoundsFromRgba, type VisibleBounds } from './visible';
+import { keyBlackMatte, keyBottomDesatOutline, keyBottomRimHighlight, keyContactShadow, keyNearWhiteFringe, visibleBoundsFromRgba, type VisibleBounds } from './visible';
 
 const cache = new Map<string, HTMLImageElement>();
 const boundsCache = new Map<string, VisibleBounds | null>();
@@ -99,6 +99,7 @@ function prepareSprite(relPath: string, img: HTMLImageElement): VisibleBounds | 
       if (usesContactShadowKey(relPath)) {
         keyContactShadow(imageData.data, canvas.width, canvas.height);
         keyBottomRimHighlight(imageData.data, canvas.width, canvas.height);
+        keyBottomDesatOutline(imageData.data, canvas.width, canvas.height);
       }
       ctx.putImageData(imageData, 0, 0);
     }

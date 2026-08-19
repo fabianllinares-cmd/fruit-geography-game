@@ -136,6 +136,36 @@ export function keyBottomRimHighlight(
   }
 }
 
+/**
+ * Shave the desaturated brown/grey outline at the bottom of apple/orange.
+ * That outline reads as a white crescent once the sprite is scaled down.
+ */
+export function keyBottomDesatOutline(
+  data: Uint8ClampedArray | Uint8Array,
+  width: number,
+  height: number,
+): void {
+  const bounds = visibleBoundsFromRgba(data, width, height);
+  if (!bounds) return;
+  const yMin = bounds.y + Math.floor(bounds.h * 0.82);
+  const y1 = bounds.y + bounds.h;
+  const x1 = bounds.x + bounds.w;
+  for (let x = bounds.x; x < x1; x++) {
+    let cleared = 0;
+    for (let y = y1 - 1; y >= yMin; y--) {
+      const i = (y * width + x) * 4;
+      if (data[i + 3] <= 12) continue;
+      const { sat, lum } = saturationAndLuma(data[i], data[i + 1], data[i + 2]);
+      if (sat < 175 && lum > 42 && cleared < 12) {
+        data[i + 3] = 0;
+        cleared += 1;
+        continue;
+      }
+      break;
+    }
+  }
+}
+
 /** Tight AABB of pixels whose alpha is above the cutoff. */
 export function visibleBoundsFromRgba(
   data: Uint8ClampedArray | Uint8Array,

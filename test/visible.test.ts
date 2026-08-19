@@ -4,6 +4,7 @@ import {
   VISUAL_RADIUS_SCALE,
   fitDestRect,
   keyBlackMatte,
+  keyBottomDesatOutline,
   keyBottomRimHighlight,
   keyContactShadow,
   keyNearWhiteFringe,
@@ -136,6 +137,28 @@ describe('visible sprite bounds', () => {
     expect(data[(6 * width + 3) * 4 + 3]).toBe(0);
     expect(data[(7 * width + 3) * 4 + 3]).toBe(0);
     expect(data[(3 * width + 3) * 4 + 3]).toBe(255);
+  });
+
+  it('shaves a desaturated brown outline off the bottom of a fruit', () => {
+    const width = 6;
+    const height = 8;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const setPx = (x: number, y: number, r: number, g: number, b: number, a: number) => {
+      const i = (y * width + x) * 4;
+      data[i] = r;
+      data[i + 1] = g;
+      data[i + 2] = b;
+      data[i + 3] = a;
+    };
+    for (let y = 1; y <= 5; y++) {
+      for (let x = 2; x <= 3; x++) setPx(x, y, 200, 30, 20, 255);
+    }
+    for (let x = 2; x <= 3; x++) setPx(x, 6, 110, 80, 70, 255);
+    for (let x = 2; x <= 3; x++) setPx(x, 7, 108, 78, 68, 255);
+    keyBottomDesatOutline(data, width, height);
+    expect(data[(7 * width + 2) * 4 + 3]).toBe(0);
+    expect(data[(6 * width + 2) * 4 + 3]).toBe(0);
+    expect(data[(3 * width + 2) * 4 + 3]).toBe(255);
   });
 
   it('drops near-white fringe pixels that inflate a strawberry-style silhouette', () => {
