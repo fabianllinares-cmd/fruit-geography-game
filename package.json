@@ -1,0 +1,17 @@
+{
+  "name": "fruit-geography-game",
+  "version": "0.1.0",
+  "description": "Physics fruit merge game with geography power-ups",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host --port 5173",
+    "build": "vite build",
+    "preview": "vite preview --host --port 4173"
+  },
+  "dependencies": {
+    "matter-js": "^0.20.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
