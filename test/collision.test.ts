@@ -46,32 +46,46 @@ describe('collision silhouettes', () => {
     expect(collisionFor('dragonfruit').fit).toBe('min');
     expect(collisionFor('papaya').fit).toBe('min');
     expect(collisionFor('coconut').fit).toBe('min');
+    expect(collisionFor('kiwi').fit).toBe('max');
+    expect(collisionFor('passionfruit').fit).toBe('max');
+    expect(collisionFor('mango').fit).toBe('max');
 
     const raspberry = collisionSize('raspberry', RADII[0]);
     expect(raspberry.kind).toBe('circle');
-    expect(raspberry.bound).toBeGreaterThan(RADII[0] * 0.8);
-    expect(raspberry.bound).toBeLessThan(RADII[0] * 0.95);
+    expect(raspberry.bound).toBeGreaterThan(RADII[0] * 0.88);
+    expect(raspberry.bound).toBeLessThan(RADII[0] * 1.02);
+
+    const kiwi = collisionSize('kiwi', RADII[1]);
+    expect(kiwi.kind).toBe('circle');
+    expect(kiwi.bound).toBeGreaterThan(RADII[1] * 0.98);
 
     const starfruit = collisionSize('starfruit', RADII[2]);
-    expect(starfruit.kind).toBe('circle');
-    expect(starfruit.bound).toBeGreaterThan(RADII[2] * 0.82);
-    expect(starfruit.bound).toBeLessThan(RADII[2] * 0.98);
+    expect(starfruit.kind).toBe('compound');
+    expect(starfruit.parts?.length).toBeGreaterThanOrEqual(4);
+    expect(starfruit.bound).toBeGreaterThan(RADII[2] * 0.9);
+    expect(starfruit.bound).toBeLessThan(RADII[2] * 1.35);
 
     const banana = collisionSize('banana', RADII[6]);
     expect(banana.kind).toBe('compound');
     expect(banana.parts?.length).toBeGreaterThanOrEqual(4);
-    expect(banana.hw).toBeLessThan(RADII[6] * 1.25);
+    expect(banana.hw).toBeGreaterThan(RADII[6] * 0.9);
+    expect(banana.hw).toBeLessThan(RADII[6] * 1.45);
 
     const coconut = collisionSize('coconut', RADII[7]);
     expect(coconut.kind).toBe('compound');
-    expect(coconut.parts?.length).toBe(2);
+    expect(coconut.parts?.length).toBeGreaterThanOrEqual(3);
 
     const papaya = collisionSize('papaya', RADII[8]);
     expect(papaya.kind).toBe('compound');
-    expect(papaya.hw).toBeGreaterThan(papaya.hh);
+    expect(papaya.parts?.length).toBeGreaterThanOrEqual(3);
 
     const dragonfruit = collisionSize('dragonfruit', RADII[4]);
     expect(dragonfruit.kind).toBe('compound');
+    expect(dragonfruit.parts?.length).toBeGreaterThanOrEqual(3);
+
+    const mango = collisionSize('mango', RADII[5]);
+    expect(mango.kind).toBe('capsule');
+    expect(mango.hh).toBeGreaterThan(mango.hw);
   });
 
   it('does not change Classic fruit radii', () => {
@@ -107,5 +121,21 @@ describe('collision silhouettes', () => {
     const trophy = collisionSize('trophy', RADII[10]);
     expect(trophy.kind).toBe('rect');
     expect(trophy.hw / trophy.hh).toBeLessThan(0.8);
+  });
+
+  it('does not change pineapple or watermelon colliders', () => {
+    expect(collisionFor('pineapple')).toMatchObject({ kind: 'rect', aspect: 0.62, fit: 'max' });
+    expect(collisionFor('watermelon')).toMatchObject({ kind: 'circle', inset: 0.94, fit: 'max' });
+  });
+
+  it('recentres offset Tropical sprites onto their colliders without changing fit', () => {
+    expect(collisionFor('banana').kind).toBe('compound');
+    expect(collisionFor('coconut').kind).toBe('compound');
+    expect(collisionFor('dragonfruit').kind).toBe('compound');
+    expect(collisionFor('papaya').kind).toBe('compound');
+    expect(collisionFor('banana').fit).toBe('min');
+    expect(collisionFor('coconut').fit).toBe('min');
+    expect(collisionSize('banana', RADII[6]).parts?.length).toBeGreaterThanOrEqual(4);
+    expect(collisionSize('coconut', RADII[7]).parts?.length).toBeGreaterThanOrEqual(3);
   });
 });

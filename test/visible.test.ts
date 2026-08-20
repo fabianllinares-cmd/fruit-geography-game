@@ -3,6 +3,7 @@ import {
   NIGHT_GLOW_FILTER,
   fitDestRect,
   keyBlackMatte,
+  opaqueBoundsFromRgba,
   trimInsets,
   visibleBoundsFromRgba,
 } from '../src/assets/visible';
@@ -67,5 +68,27 @@ describe('visible sprite bounds', () => {
     const bounds = visibleBoundsFromRgba(data, width, height);
     expect(bounds).toEqual({ x: 2, y: 2, w: 2, h: 2 });
     expect(data[3]).toBe(0);
+  });
+
+  it('ignores near-white fringe when measuring the opaque fruit body', () => {
+    const width = 8;
+    const height = 8;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const setPx = (x: number, y: number, r: number, g: number, b: number, a: number) => {
+      const i = (y * width + x) * 4;
+      data[i] = r;
+      data[i + 1] = g;
+      data[i + 2] = b;
+      data[i + 3] = a;
+    };
+    for (let x = 0; x < width; x++) setPx(x, 7, 220, 220, 220, 255);
+    setPx(3, 3, 200, 40, 40, 255);
+    setPx(4, 3, 200, 40, 40, 255);
+    setPx(3, 4, 200, 40, 40, 255);
+    setPx(4, 4, 200, 40, 40, 255);
+    const visible = visibleBoundsFromRgba(data, width, height);
+    const opaque = opaqueBoundsFromRgba(data, width, height);
+    expect(visible).toEqual({ x: 0, y: 3, w: 8, h: 5 });
+    expect(opaque).toEqual({ x: 3, y: 3, w: 2, h: 2 });
   });
 });

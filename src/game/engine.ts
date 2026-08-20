@@ -22,11 +22,12 @@ const DROP_COOLDOWN_MS = 420;
 const PHYSICS_STEP_MS = 1000 / 60;
 /** Several gentle pulses; horizontal agitation is stronger than lift. */
 export const SHAKE_PULSES = 5;
-export const SHAKE_KICK_X = 20;
-export const SHAKE_KICK_Y_BASE = 2.6;
-export const SHAKE_KICK_Y_RANGE = 4.0;
-export const SHAKE_SPIN = 0.18;
-export const SHAKE_START_SCALE = 0.62;
+export const SHAKE_KICK_X = 26;
+export const SHAKE_KICK_Y_BASE = 3.4;
+export const SHAKE_KICK_Y_RANGE = 5.2;
+export const SHAKE_SPIN = 0.2;
+export const SHAKE_START_SCALE = 0.7;
+export const SHAKE_MAX_UP = 14;
 const SETTLED_SPEED = 0.5;
 const SETTLED_SPIN = 0.1;
 /** Show the danger warning when a settled silhouette is this close to the line. */
@@ -295,6 +296,7 @@ export class MergeEngine {
     }
     this._resolveMerges();
     this._rescueFallen();
+    this._containFloor();
 
     if (this.dropCooldown > 0) {
       this.dropCooldown -= dt;
@@ -370,7 +372,7 @@ export class MergeEngine {
       const kickY = -(SHAKE_KICK_Y_BASE + this.random() * SHAKE_KICK_Y_RANGE) * scale;
       Body.setVelocity(fruit, {
         x: fruit.velocity.x * 0.35 + kickX,
-        y: fruit.velocity.y * 0.35 + kickY,
+        y: Math.max(-SHAKE_MAX_UP, fruit.velocity.y * 0.35 + kickY),
       });
       Body.setAngularVelocity(fruit, (this.random() - 0.5) * SHAKE_SPIN * scale);
     }
@@ -386,6 +388,22 @@ export class MergeEngine {
         y: this.height - WALL - radius - 2,
       });
       Body.setVelocity(fruit, { x: fruit.velocity.x * 0.2, y: 0 });
+    }
+  }
+
+  /** Keep collision silhouettes (and therefore visible fruit) on or above the floor strip. */
+  private _containFloor(): void {
+    const floorTop = this.height - WALL;
+    for (const fruit of this.fruits()) {
+      const overflow = fruit.bounds.max.y - floorTop;
+      if (overflow <= 0.35) continue;
+      Body.setPosition(fruit, {
+        x: fruit.position.x,
+        y: fruit.position.y - overflow,
+      });
+      if (fruit.velocity.y > 0) {
+        Body.setVelocity(fruit, { x: fruit.velocity.x * 0.65, y: 0 });
+      }
     }
   }
 

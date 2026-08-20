@@ -45,10 +45,13 @@ export class GameRenderer {
     ctx.clearRect(0, 0, w, h);
     ctx.setTransform(sx, 0, 0, sy, shake.x * sx, shake.y * sy);
 
-    this._walls(ctx);
     this._danger(ctx);
     this._preview(ctx, theme, now);
 
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, WORLD_WIDTH, WORLD_HEIGHT - WALL);
+    ctx.clip();
     for (const body of this.engine.fruits()) {
       const def = theme.objects[body.gameLevel];
       if (!def) continue;
@@ -63,6 +66,8 @@ export class GameRenderer {
       drawObject(ctx, def, body.angle, pop);
       ctx.restore();
     }
+    ctx.restore();
+    this._walls(ctx);
 
     for (const p of this.fx.particles) {
       ctx.globalAlpha = Math.max(0, p.life);

@@ -69,7 +69,6 @@ export class App {
     if (menu && !menu.querySelector('img')) {
       menu.append(spriteImg(buttonPath('menu'), 'Menu', 'ui-icon'));
     }
-    this._syncSoundButton();
     setSprite(document.getElementById('energy-icon'), effectPath('energy'), '', 'ui-icon energy-bolt');
     const targetLabel = document.querySelector('#target-banner span');
     if (targetLabel && !targetLabel.querySelector('img')) {
@@ -170,7 +169,6 @@ export class App {
       }
     });
     document.getElementById('menu-btn')!.addEventListener('click', () => this._showMenu());
-    document.getElementById('sound-btn')!.addEventListener('click', () => this._toggleSound());
     document.getElementById('target-cancel')!.addEventListener('click', () => this._leaveTarget());
 
     window.addEventListener('keydown', (e) => {
@@ -517,9 +515,7 @@ export class App {
       'menu',
     );
     overlay.querySelector('[data-act="sound"]')?.addEventListener('click', (e) => {
-      audio.setEnabled(!audio.enabled);
-      saveSoundEnabled(audio.enabled);
-      this._syncSoundButton();
+      this._toggleSound();
       const btn = e.currentTarget as HTMLButtonElement;
       btn.setAttribute('aria-label', audio.enabled ? 'Mute sound' : 'Unmute sound');
       const img = btn.querySelector('img');
@@ -539,17 +535,6 @@ export class App {
   private _toggleSound(): void {
     audio.setEnabled(!audio.enabled);
     saveSoundEnabled(audio.enabled);
-    this._syncSoundButton();
-  }
-
-  private _syncSoundButton(): void {
-    const hud = document.getElementById('sound-btn');
-    if (!hud) return;
-    hud.setAttribute('aria-label', audio.enabled ? 'Mute sound' : 'Unmute sound');
-    const existing = hud.querySelector('img');
-    const src = assetUrl(buttonPath(audio.enabled ? 'sound_on' : 'sound_off'));
-    if (existing) existing.src = src;
-    else hud.append(spriteImg(buttonPath(audio.enabled ? 'sound_on' : 'sound_off'), '', 'ui-icon'));
   }
 
   private _persist(): void {

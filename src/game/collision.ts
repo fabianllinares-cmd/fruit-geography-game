@@ -29,12 +29,25 @@ export interface CollisionSpec {
   inset: number;
   /** Optional compound circles for curved / irregular silhouettes. */
   parts?: CollisionPart[];
+  /**
+   * Opaque-mass centre in dest-space, as a fraction of the level radius.
+   * Drawing is shifted by this so the visible fruit sits on the collider
+   * without changing dest width/height (display size).
+   */
+  alignX?: number;
+  alignY?: number;
 }
 
 const DEFAULT_INSET = 0.94;
 
-function circle(aspect = 1, inset = DEFAULT_INSET, fit: CollisionFit = 'max'): CollisionSpec {
-  return { kind: 'circle', aspect, fit, inset };
+function circle(
+  aspect = 1,
+  inset = DEFAULT_INSET,
+  fit: CollisionFit = 'max',
+  alignX = 0,
+  alignY = 0,
+): CollisionSpec {
+  return { kind: 'circle', aspect, fit, inset, alignX, alignY };
 }
 
 function wide(aspect: number, inset = DEFAULT_INSET): CollisionSpec {
@@ -45,12 +58,24 @@ function tall(aspect: number, inset = DEFAULT_INSET): CollisionSpec {
   return { kind: 'rect', aspect, fit: 'max', inset };
 }
 
-function capsule(aspect: number, fit: CollisionFit, inset = DEFAULT_INSET): CollisionSpec {
-  return { kind: 'capsule', aspect, fit, inset };
+function capsule(
+  aspect: number,
+  fit: CollisionFit,
+  inset = DEFAULT_INSET,
+  alignX = 0,
+  alignY = 0,
+): CollisionSpec {
+  return { kind: 'capsule', aspect, fit, inset, alignX, alignY };
 }
 
-function compound(aspect: number, fit: CollisionFit, parts: CollisionPart[], inset = 1): CollisionSpec {
-  return { kind: 'compound', aspect, fit, inset, parts: centerParts(parts) };
+function compound(
+  aspect: number,
+  fit: CollisionFit,
+  parts: CollisionPart[],
+  alignX = 0,
+  alignY = 0,
+): CollisionSpec {
+  return { kind: 'compound', aspect, fit, inset: 1, parts: centerParts(parts), alignX, alignY };
 }
 
 /** Keep compound centres of mass on the sprite origin so drawing stays aligned. */
@@ -86,32 +111,42 @@ export const COLLISION: Record<string, CollisionSpec> = {
   watermelon: circle(1.0),
 
   // Tropical — opaque-mass silhouettes. `fit` is unchanged so display size stays put.
-  // Previous tight circles (inset 0.64–0.74) let sprites overlap; these sit on the
-  // visible core without restoring sparse AABB boxes.
-  raspberry: circle(1.68, 0.86, 'min'),
-  kiwi: circle(1.0, 0.97),
-  starfruit: circle(1.56, 0.9, 'min'),
-  passionfruit: circle(0.96, 0.97),
-  dragonfruit: compound(1.35, 'min', [
-    { x: -0.26, y: 0.32, r: 0.64 },
-    { x: 0.0, y: 0.0, r: 0.66 },
-    { x: 0.26, y: -0.32, r: 0.62 },
+  // Dest scale still uses the PNG visible AABB; drawing crops to the coloured fruit
+  // and centres it on the body so colliders can sit on the real silhouette.
+  raspberry: circle(1.68, 0.92, 'min'),
+  kiwi: circle(1.0, 0.995),
+  starfruit: compound(1.56, 'min', [
+    { x: -0.51, y: 0.05, r: 0.48 },
+    { x: -0.19, y: 0.57, r: 0.6 },
+    { x: -0.04, y: -0.31, r: 0.56 },
+    { x: 0.46, y: -0.58, r: 0.5 },
+    { x: 0.46, y: 0.25, r: 0.58 },
   ]),
-  mango: capsule(0.87, 'max', 0.96),
+  passionfruit: circle(0.96, 0.995),
+  dragonfruit: compound(1.35, 'min', [
+    { x: -0.44, y: 0.53, r: 0.56 },
+    { x: -0.28, y: -0.12, r: 0.52 },
+    { x: 0.21, y: 0.36, r: 0.56 },
+    { x: 0.43, y: -0.45, r: 0.58 },
+  ]),
+  mango: capsule(0.87, 'max', 0.995),
   banana: compound(1.4, 'min', [
-    { x: -0.54, y: 0.32, r: 0.38 },
-    { x: -0.16, y: 0.14, r: 0.43 },
-    { x: 0.2, y: -0.08, r: 0.42 },
-    { x: 0.54, y: -0.34, r: 0.36 },
+    { x: -0.56, y: 0.64, r: 0.4 },
+    { x: -0.11, y: 0.58, r: 0.42 },
+    { x: 0.29, y: 0.37, r: 0.42 },
+    { x: 0.59, y: 0.0, r: 0.42 },
+    { x: 0.7, y: -0.52, r: 0.4 },
   ]),
   coconut: compound(1.33, 'min', [
-    { x: -0.42, y: 0.1, r: 0.62 },
-    { x: 0.38, y: -0.08, r: 0.66 },
+    { x: -0.43, y: 0.02, r: 0.64 },
+    { x: -0.06, y: 0.59, r: 0.74 },
+    { x: 0.39, y: -0.44, r: 0.7 },
   ]),
   papaya: compound(1.38, 'min', [
-    { x: -0.5, y: 0.24, r: 0.68 },
-    { x: 0.0, y: 0.0, r: 0.72 },
-    { x: 0.52, y: -0.24, r: 0.64 },
+    { x: -0.78, y: 0.34, r: 0.64 },
+    { x: -0.14, y: -0.3, r: 0.66 },
+    { x: -0.04, y: 0.43, r: 0.6 },
+    { x: 0.64, y: -0.23, r: 0.7 },
   ]),
 
   // Sports — balls stay circular; elongated objects use capsules.

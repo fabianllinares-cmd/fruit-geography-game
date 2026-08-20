@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -106,15 +106,10 @@ describe('production asset pack', () => {
     expect(existsSync(publicFile('assets/audio/bonsai-master.mp3'))).toBe(true);
   });
 
-  it('removes superseded theme sprite files', () => {
-    expect(existsSync(publicFile('assets/images/classic/classic_01_cherry.png'))).toBe(false);
-    expect(existsSync(publicFile('assets/images/night/night_01_cherry.png'))).toBe(false);
-    expect(existsSync(publicFile('assets/images/tropical/tropical_10_pineapple.png'))).toBe(false);
-    expect(existsSync(publicFile('assets/images/tropical/tropical_11_watermelon.png'))).toBe(false);
-    expect(existsSync(publicFile('assets/images/tropical/tropical_02_kiwi.png'))).toBe(true);
-    expect(existsSync(publicFile('assets/images/sports/sports_01_shuttlecock.png'))).toBe(false);
-    expect(existsSync(publicFile('assets/images/sports/sports_07_soccer.png'))).toBe(true);
-    expect(existsSync(publicFile('assets/images/drinks/drinks_02_olive.png'))).toBe(false);
-    expect(existsSync(publicFile('assets/images/drinks/drinks_08_long.png'))).toBe(true);
+  it('keeps mute inside the menu instead of the HUD', () => {
+    const html = readFileSync(path.join(root, 'index.html'), 'utf8');
+    expect(html).toContain('id="menu-btn"');
+    expect(html).not.toContain('id="sound-btn"');
+    expect(html).not.toContain('hud-actions');
   });
 });

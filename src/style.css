@@ -60,6 +60,8 @@ body {
   gap: 6px;
   min-width: 0;
   width: 100%;
+  flex: 0 0 auto;
+  min-height: 52px;
 }
 
 .theme-pill,
@@ -102,13 +104,7 @@ body {
   padding: 0;
   overflow: hidden;
   flex: 0 0 auto;
-}
-
-.hud-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 0 0 auto;
+  justify-self: end;
 }
 
 .scores {
@@ -145,7 +141,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 36px;
+  min-width: 40px;
   flex: 0 0 auto;
 }
 
@@ -157,8 +153,8 @@ body {
 }
 
 #highest-emoji {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
 }
 
 .next-row {
@@ -166,6 +162,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex: 0 0 auto;
 }
 
 .next-main,
@@ -176,11 +173,12 @@ body {
   background: var(--hud);
   border: 1px solid var(--panel-border);
   border-radius: 16px;
-  padding: 6px 12px;
+  padding: 8px 12px;
+  overflow: visible;
 }
 
 .next-after {
-  padding: 6px 10px;
+  padding: 8px 10px;
 }
 
 .next-label {
@@ -192,13 +190,13 @@ body {
 }
 
 .next-emoji {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
 }
 
 .then-emoji {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
 }
 
 .next-name {
@@ -562,7 +560,7 @@ body {
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
 }
 
@@ -577,16 +575,25 @@ body {
 }
 
 .sprite-slot img {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
+  width: 92%;
+  height: 92%;
+  max-width: 92%;
+  max-height: 92%;
+}
+
+.sprite-slot img.alpha-fit {
+  /* Enlarge by the PNG-padding ratio so clip-path leftover fills the slot
+     without a transform that overflow:hidden would crop. */
+  width: calc(100% * var(--trim-scale, 1));
+  height: calc(100% * var(--trim-scale, 1));
+  max-width: none;
+  max-height: none;
+  clip-path: inset(var(--trim-top, 0%) var(--trim-right, 0%) var(--trim-bottom, 0%) var(--trim-left, 0%));
+  transform: none;
 }
 
 img.alpha-fit {
   clip-path: inset(var(--trim-top, 0%) var(--trim-right, 0%) var(--trim-bottom, 0%) var(--trim-left, 0%));
-  transform: scale(var(--trim-scale, 1));
-  transform-origin: center;
 }
 
 /* Night identity is a render-time silhouette glow, not duplicate PNGs.
