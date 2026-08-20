@@ -22,8 +22,10 @@ export function drawObject(ctx: CanvasRenderingContext2D, def: ObjectDef, angle:
       const sy = dest.h / vis.h;
       const fw = opaque.w * sx;
       const fh = opaque.h * sy;
-      const dx = -fw / 2;
-      const dy = -fh / 2;
+      // alignX/Y is the opaque-mass COM in radius units. Subtracting it puts
+      // that point on the body origin, matching Matter.js compound COM.
+      const dx = -fw / 2 - (spec.alignX ?? 0) * r;
+      const dy = -fh / 2 - (spec.alignY ?? 0) * r;
       const night = def.visual.style === 'night-fruit' ? getNightSprite(def.visual.sprite) : null;
       if (night) {
         const nx = dest.w / night.w;
