@@ -1,4 +1,4 @@
-import { getDisplaySprite, getNightSprite, getVisibleBounds } from '../assets/loader';
+import { getDisplaySprite, getNightSprite, getOpaqueBounds, getVisibleBounds } from '../assets/loader';
 import { fitDestRect, sourceSize } from '../assets/visible';
 import { collisionFor } from './collision';
 import type { ObjectDef } from '../themes/types';
@@ -15,22 +15,25 @@ export function drawObject(ctx: CanvasRenderingContext2D, def: ObjectDef, angle:
     const size = sourceSize(img);
     if (size.w > 0 && size.h > 0) {
       const spec = collisionFor(def.id);
-      const bounds = getVisibleBounds(def.visual.sprite) ?? { x: 0, y: 0, w: size.w, h: size.h };
-      const dest = fitDestRect(bounds.w, bounds.h, r, spec.fit);
-      const ox = (spec.alignX ?? 0) * r;
-      const oy = (spec.alignY ?? 0) * r;
-      const dx = dest.x - ox;
-      const dy = dest.y - oy;
+      const vis = getVisibleBounds(def.visual.sprite) ?? { x: 0, y: 0, w: size.w, h: size.h };
+      const dest = fitDestRect(vis.w, vis.h, r, spec.fit);
+      const opaque = getOpaqueBounds(def.visual.sprite) ?? vis;
+      const sx = dest.w / vis.w;
+      const sy = dest.h / vis.h;
+      const fw = opaque.w * sx;
+      const fh = opaque.h * sy;
+      const dx = -fw / 2;
+      const dy = -fh / 2;
       const night = def.visual.style === 'night-fruit' ? getNightSprite(def.visual.sprite) : null;
       if (night) {
-        const sx = dest.w / night.w;
-        const sy = dest.h / night.h;
+        const nx = dest.w / night.w;
+        const ny = dest.h / night.h;
         ctx.drawImage(
           night.canvas,
-          dx - night.pad * sx,
-          dy - night.pad * sy,
-          dest.w + night.pad * 2 * sx,
-          dest.h + night.pad * 2 * sy,
+          dest.x - night.pad * nx,
+          dest.y - night.pad * ny,
+          dest.w + night.pad * 2 * nx,
+          dest.h + night.pad * 2 * ny,
         );
       } else {
         if (def.visual.style === 'night-fruit') {
@@ -44,7 +47,7 @@ export function drawObject(ctx: CanvasRenderingContext2D, def: ObjectDef, angle:
           ctx.shadowBlur = Math.max(2, r * 0.16);
           ctx.shadowOffsetY = Math.max(1, r * 0.05);
         }
-        ctx.drawImage(img, bounds.x, bounds.y, bounds.w, bounds.h, dx, dy, dest.w, dest.h);
+        ctx.drawImage(img, opaque.x, opaque.y, opaque.w, opaque.h, dx, dy, fw, fh);
       }
     }
   }

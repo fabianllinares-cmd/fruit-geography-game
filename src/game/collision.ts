@@ -111,72 +111,43 @@ export const COLLISION: Record<string, CollisionSpec> = {
   watermelon: circle(1.0),
 
   // Tropical — opaque-mass silhouettes. `fit` is unchanged so display size stays put.
-  // Several Tropical PNGs have opaque fringe that inflates visible AABB/`fit: min`
-  // dest rects; `alignX/Y` re-centres the fruit on the body without resizing dest.
-  raspberry: circle(1.68, 0.96, 'min', 0.001, -0.079),
-  kiwi: circle(1.0, 0.995, 'max', -0.009, 0.007),
-  starfruit: compound(
-    1.56,
-    'min',
-    [
-      { x: -0.38, y: -0.18, r: 0.52 },
-      { x: -0.49, y: 0.42, r: 0.46 },
-      { x: 0.28, y: -0.65, r: 0.5 },
-      { x: 0.15, y: 0.51, r: 0.46 },
-      { x: 0.43, y: -0.02, r: 0.46 },
-    ],
-    -0.018,
-    -0.025,
-  ),
-  passionfruit: circle(0.96, 0.995, 'max', 0.018, 0.005),
-  dragonfruit: compound(
-    1.35,
-    'min',
-    [
-      { x: -0.27, y: -0.2, r: 0.52 },
-      { x: -0.39, y: 0.45, r: 0.54 },
-      { x: 0.25, y: 0.24, r: 0.53 },
-      { x: 0.45, y: -0.56, r: 0.55 },
-    ],
-    -0.54,
-    0.041,
-  ),
-  mango: capsule(0.87, 'max', 0.99, -0.017, 0.032),
-  banana: compound(
-    1.4,
-    'min',
-    [
-      { x: -0.73, y: 0.38, r: 0.42 },
-      { x: -0.29, y: 0.32, r: 0.46 },
-      { x: 0.12, y: 0.11, r: 0.45 },
-      { x: 0.42, y: -0.26, r: 0.4 },
-    ],
-    -0.353,
-    0.285,
-  ),
-  coconut: compound(
-    1.33,
-    'min',
-    [
-      { x: -0.43, y: 0.03, r: 0.6 },
-      { x: -0.07, y: 0.6, r: 0.7 },
-      { x: 0.38, y: -0.42, r: 0.66 },
-    ],
-    -0.469,
-    -0.007,
-  ),
-  papaya: compound(
-    1.38,
-    'min',
-    [
-      { x: -0.7, y: 0.24, r: 0.6 },
-      { x: 0.02, y: -0.4, r: 0.6 },
-      { x: 0.01, y: 0.38, r: 0.56 },
-      { x: 0.74, y: -0.26, r: 0.64 },
-    ],
-    -0.328,
-    0.062,
-  ),
+  // Dest scale still uses the PNG visible AABB; drawing crops to the coloured fruit
+  // and centres it on the body so colliders can sit on the real silhouette.
+  raspberry: circle(1.68, 0.92, 'min'),
+  kiwi: circle(1.0, 0.995),
+  starfruit: compound(1.56, 'min', [
+    { x: -0.51, y: 0.05, r: 0.48 },
+    { x: -0.19, y: 0.57, r: 0.6 },
+    { x: -0.04, y: -0.31, r: 0.56 },
+    { x: 0.46, y: -0.58, r: 0.5 },
+    { x: 0.46, y: 0.25, r: 0.58 },
+  ]),
+  passionfruit: circle(0.96, 0.995),
+  dragonfruit: compound(1.35, 'min', [
+    { x: -0.44, y: 0.53, r: 0.56 },
+    { x: -0.28, y: -0.12, r: 0.52 },
+    { x: 0.21, y: 0.36, r: 0.56 },
+    { x: 0.43, y: -0.45, r: 0.58 },
+  ]),
+  mango: capsule(0.87, 'max', 0.995),
+  banana: compound(1.4, 'min', [
+    { x: -0.56, y: 0.64, r: 0.4 },
+    { x: -0.11, y: 0.58, r: 0.42 },
+    { x: 0.29, y: 0.37, r: 0.42 },
+    { x: 0.59, y: 0.0, r: 0.42 },
+    { x: 0.7, y: -0.52, r: 0.4 },
+  ]),
+  coconut: compound(1.33, 'min', [
+    { x: -0.43, y: 0.02, r: 0.64 },
+    { x: -0.06, y: 0.59, r: 0.74 },
+    { x: 0.39, y: -0.44, r: 0.7 },
+  ]),
+  papaya: compound(1.38, 'min', [
+    { x: -0.78, y: 0.34, r: 0.64 },
+    { x: -0.14, y: -0.3, r: 0.66 },
+    { x: -0.04, y: 0.43, r: 0.6 },
+    { x: 0.64, y: -0.23, r: 0.7 },
+  ]),
 
   // Sports — balls stay circular; elongated objects use capsules.
   pingpong: circle(0.98, 0.95),

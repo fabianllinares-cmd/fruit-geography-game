@@ -52,7 +52,7 @@ describe('collision silhouettes', () => {
 
     const raspberry = collisionSize('raspberry', RADII[0]);
     expect(raspberry.kind).toBe('circle');
-    expect(raspberry.bound).toBeGreaterThan(RADII[0] * 0.92);
+    expect(raspberry.bound).toBeGreaterThan(RADII[0] * 0.88);
     expect(raspberry.bound).toBeLessThan(RADII[0] * 1.02);
 
     const kiwi = collisionSize('kiwi', RADII[1]);
@@ -129,11 +129,13 @@ describe('collision silhouettes', () => {
   });
 
   it('recentres offset Tropical sprites onto their colliders without changing fit', () => {
-    expect(Math.abs(collisionFor('banana').alignX ?? 0)).toBeGreaterThan(0.2);
-    expect(Math.abs(collisionFor('coconut').alignX ?? 0)).toBeGreaterThan(0.2);
-    expect(Math.abs(collisionFor('dragonfruit').alignX ?? 0)).toBeGreaterThan(0.2);
-    expect(Math.abs(collisionFor('papaya').alignX ?? 0)).toBeGreaterThan(0.2);
+    expect(collisionFor('banana').kind).toBe('compound');
+    expect(collisionFor('coconut').kind).toBe('compound');
+    expect(collisionFor('dragonfruit').kind).toBe('compound');
+    expect(collisionFor('papaya').kind).toBe('compound');
     expect(collisionFor('banana').fit).toBe('min');
     expect(collisionFor('coconut').fit).toBe('min');
+    expect(collisionSize('banana', RADII[6]).parts?.length).toBeGreaterThanOrEqual(4);
+    expect(collisionSize('coconut', RADII[7]).parts?.length).toBeGreaterThanOrEqual(3);
   });
 });

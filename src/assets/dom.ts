@@ -1,10 +1,10 @@
 import { assetUrl } from './catalog';
-import { getDisplayUrl, rememberVisibleBounds } from './loader';
+import { getDisplayUrl, getHudUrl, rememberVisibleBounds } from './loader';
 import { trimInsets } from './visible';
 
 export function spriteImg(relPath: string, alt: string, className = 'sprite'): HTMLImageElement {
   const img = document.createElement('img');
-  img.src = getDisplayUrl(relPath) ?? assetUrl(relPath);
+  img.src = getHudUrl(relPath) ?? getDisplayUrl(relPath) ?? assetUrl(relPath);
   img.alt = alt;
   img.draggable = false;
   img.className = className;
@@ -16,7 +16,7 @@ export function spriteImg(relPath: string, alt: string, className = 'sprite'): H
 export function setSprite(el: HTMLElement | null, relPath: string, alt: string, className = 'sprite'): void {
   if (!el) return;
   const current = el.querySelector('img');
-  const nextSrc = getDisplayUrl(relPath) ?? assetUrl(relPath);
+  const nextSrc = getHudUrl(relPath) ?? getDisplayUrl(relPath) ?? assetUrl(relPath);
   if (current && current.getAttribute('src') === nextSrc) {
     current.alt = alt;
     bindAlphaFit(current, relPath);
@@ -33,13 +33,24 @@ function bindAlphaFit(img: HTMLImageElement, relPath: string): void {
 }
 
 function applyAlphaFit(img: HTMLImageElement, relPath: string): void {
-  const bounds = rememberVisibleBounds(relPath, img);
+  rememberVisibleBounds(relPath, img);
+  const hudUrl = getHudUrl(relPath);
+  if (hudUrl) {
+    if (img.getAttribute('src') !== hudUrl) {
+      img.addEventListener('load', () => applyAlphaFit(img, relPath), { once: true });
+      img.src = hudUrl;
+      return;
+    }
+    img.classList.remove('alpha-fit');
+    return;
+  }
   const displayUrl = getDisplayUrl(relPath);
   if (displayUrl && img.getAttribute('src') !== displayUrl) {
     img.addEventListener('load', () => applyAlphaFit(img, relPath), { once: true });
     img.src = displayUrl;
     return;
   }
+  const bounds = rememberVisibleBounds(relPath, img);
   if (!bounds || img.naturalWidth < 1) return;
   const inset = trimInsets(bounds, img.naturalWidth, img.naturalHeight);
   img.style.setProperty('--trim-top', `${inset.top * 100}%`);

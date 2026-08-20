@@ -1,10 +1,18 @@
 import { allAssetPaths, assetUrl } from './catalog';
-import { keyBlackMatte, visibleBoundsFromRgba, NIGHT_GLOW_FILTER, type VisibleBounds } from './visible';
+import {
+  keyBlackMatte,
+  visibleBoundsFromRgba,
+  opaqueBoundsFromRgba,
+  NIGHT_GLOW_FILTER,
+  type VisibleBounds,
+} from './visible';
 
 const cache = new Map<string, HTMLImageElement>();
 const boundsCache = new Map<string, VisibleBounds | null>();
+const opaqueBoundsCache = new Map<string, VisibleBounds | null>();
 const displayCache = new Map<string, HTMLCanvasElement>();
 const displayUrlCache = new Map<string, string>();
+const hudUrlCache = new Map<string, string>();
 const nightGlowCache = new Map<string, NightGlowSprite>();
 let preloadPromise: Promise<void> | null = null;
 
@@ -39,11 +47,21 @@ export function getDisplayUrl(relPath: string): string | null {
   return displayUrlCache.get(relPath) ?? null;
 }
 
+export function getHudUrl(relPath: string): string | null {
+  return hudUrlCache.get(relPath) ?? null;
+}
+
 export function getVisibleBounds(relPath: string, img?: HTMLImageElement | null): VisibleBounds | null {
   if (boundsCache.has(relPath)) return boundsCache.get(relPath) ?? null;
   const sprite = img ?? getSprite(relPath);
   if (!sprite || !sprite.complete || sprite.naturalWidth < 1) return null;
   return prepareSprite(relPath, sprite);
+}
+
+export function getOpaqueBounds(relPath: string): VisibleBounds | null {
+  if (opaqueBoundsCache.has(relPath)) return opaqueBoundsCache.get(relPath) ?? null;
+  getVisibleBounds(relPath);
+  return opaqueBoundsCache.get(relPath) ?? boundsCache.get(relPath) ?? null;
 }
 
 export function rememberVisibleBounds(relPath: string, img: HTMLImageElement): VisibleBounds | null {
@@ -79,14 +97,29 @@ function prepareSprite(relPath: string, img: HTMLImageElement): VisibleBounds | 
       displayUrlCache.set(relPath, canvas.toDataURL('image/png'));
     }
     bounds = visibleBoundsFromRgba(imageData.data, canvas.width, canvas.height) ?? bounds;
+    const opaque = opaqueBoundsFromRgba(imageData.data, canvas.width, canvas.height) ?? bounds;
+    opaqueBoundsCache.set(relPath, opaque);
+    bakeHudCrop(relPath, displayCache.get(relPath) ?? canvas, opaque);
   } catch {
     // Tainted canvas: keep the original pixels and full-frame bounds.
   }
   boundsCache.set(relPath, bounds);
+  if (!opaqueBoundsCache.has(relPath)) opaqueBoundsCache.set(relPath, bounds);
   if (bounds && usesBlackMatteKey(relPath)) {
     bakeNightGlow(relPath, displayCache.get(relPath) ?? img, bounds);
   }
   return bounds;
+}
+
+function bakeHudCrop(relPath: string, src: CanvasImageSource, bounds: VisibleBounds): void {
+  if (typeof document === 'undefined' || bounds.w < 1 || bounds.h < 1) return;
+  const crop = document.createElement('canvas');
+  crop.width = bounds.w;
+  crop.height = bounds.h;
+  const ctx = crop.getContext('2d');
+  if (!ctx) return;
+  ctx.drawImage(src, bounds.x, bounds.y, bounds.w, bounds.h, 0, 0, bounds.w, bounds.h);
+  hudUrlCache.set(relPath, crop.toDataURL('image/png'));
 }
 
 /** Pre-render the Night neon glow once per fruit sprite so gameplay never uses ctx.filter. */

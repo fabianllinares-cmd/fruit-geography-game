@@ -58,6 +58,45 @@ export function visibleBoundsFromRgba(
   return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
 }
 
+/**
+ * Near-white/near-black fully-opaque fringe that some Tropical PNGs include
+ * outside the fruit. Counting it as visible inflates dest rects and HUD slots.
+ */
+export function isOpaqueFringe(r: number, g: number, b: number, a: number, alphaMin = ALPHA_MIN): boolean {
+  if (a <= alphaMin) return true;
+  const mx = Math.max(r, g, b);
+  const mn = Math.min(r, g, b);
+  if (mx <= BLACK_MATTE_MAX) return true;
+  if (mn >= 180 && mx - mn <= 18) return true;
+  return false;
+}
+
+/** AABB of coloured fruit pixels, ignoring transparent and dirty fringe. */
+export function opaqueBoundsFromRgba(
+  data: Uint8ClampedArray | Uint8Array,
+  width: number,
+  height: number,
+  alphaMin = ALPHA_MIN,
+): VisibleBounds | null {
+  let minX = width;
+  let minY = height;
+  let maxX = -1;
+  let maxY = -1;
+  for (let y = 0; y < height; y++) {
+    const row = y * width * 4;
+    for (let x = 0; x < width; x++) {
+      const i = row + x * 4;
+      if (isOpaqueFringe(data[i], data[i + 1], data[i + 2], data[i + 3], alphaMin)) continue;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+    }
+  }
+  if (maxX < 0) return visibleBoundsFromRgba(data, width, height, alphaMin);
+  return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+}
+
 export type SpriteFit = 'max' | 'min';
 
 /**
