@@ -102,13 +102,7 @@ body {
   padding: 0;
   overflow: hidden;
   flex: 0 0 auto;
-}
-
-.hud-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 0 0 auto;
+  justify-self: end;
 }
 
 .scores {
@@ -145,7 +139,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 36px;
+  min-width: 40px;
   flex: 0 0 auto;
 }
 
@@ -157,8 +151,8 @@ body {
 }
 
 #highest-emoji {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
 }
 
 .next-row {
@@ -192,13 +186,13 @@ body {
 }
 
 .next-emoji {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
 }
 
 .then-emoji {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
 }
 
 .next-name {
@@ -583,10 +577,19 @@ body {
   max-height: 100%;
 }
 
+.sprite-slot img.alpha-fit {
+  /* Enlarge by the PNG-padding ratio so clip-path leftover fills the slot
+     without a transform that overflow:hidden would crop. */
+  width: calc(100% * var(--trim-scale, 1));
+  height: calc(100% * var(--trim-scale, 1));
+  max-width: none;
+  max-height: none;
+  clip-path: inset(var(--trim-top, 0%) var(--trim-right, 0%) var(--trim-bottom, 0%) var(--trim-left, 0%));
+  transform: none;
+}
+
 img.alpha-fit {
   clip-path: inset(var(--trim-top, 0%) var(--trim-right, 0%) var(--trim-bottom, 0%) var(--trim-left, 0%));
-  transform: scale(var(--trim-scale, 1));
-  transform-origin: center;
 }
 
 /* Night identity is a render-time silhouette glow, not duplicate PNGs.
