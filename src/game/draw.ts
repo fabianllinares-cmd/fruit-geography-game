@@ -14,16 +14,21 @@ export function drawObject(ctx: CanvasRenderingContext2D, def: ObjectDef, angle:
   if (img) {
     const size = sourceSize(img);
     if (size.w > 0 && size.h > 0) {
+      const spec = collisionFor(def.id);
       const bounds = getVisibleBounds(def.visual.sprite) ?? { x: 0, y: 0, w: size.w, h: size.h };
-      const dest = fitDestRect(bounds.w, bounds.h, r, collisionFor(def.id).fit);
+      const dest = fitDestRect(bounds.w, bounds.h, r, spec.fit);
+      const ox = (spec.alignX ?? 0) * r;
+      const oy = (spec.alignY ?? 0) * r;
+      const dx = dest.x - ox;
+      const dy = dest.y - oy;
       const night = def.visual.style === 'night-fruit' ? getNightSprite(def.visual.sprite) : null;
       if (night) {
         const sx = dest.w / night.w;
         const sy = dest.h / night.h;
         ctx.drawImage(
           night.canvas,
-          dest.x - night.pad * sx,
-          dest.y - night.pad * sy,
+          dx - night.pad * sx,
+          dy - night.pad * sy,
           dest.w + night.pad * 2 * sx,
           dest.h + night.pad * 2 * sy,
         );
@@ -39,7 +44,7 @@ export function drawObject(ctx: CanvasRenderingContext2D, def: ObjectDef, angle:
           ctx.shadowBlur = Math.max(2, r * 0.16);
           ctx.shadowOffsetY = Math.max(1, r * 0.05);
         }
-        ctx.drawImage(img, bounds.x, bounds.y, bounds.w, bounds.h, dest.x, dest.y, dest.w, dest.h);
+        ctx.drawImage(img, bounds.x, bounds.y, bounds.w, bounds.h, dx, dy, dest.w, dest.h);
       }
     }
   }

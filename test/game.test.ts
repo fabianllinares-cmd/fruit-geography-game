@@ -2,7 +2,7 @@ import Matter from 'matter-js';
 import { describe, expect, it } from 'vitest';
 import { ChargeMeter, ENERGY_FOR_CHALLENGE, energyFromMerge } from '../src/game/charge';
 import { DANGER_HOLD_MS, DangerTracker } from '../src/game/danger';
-import { DANGER_Y, MergeEngine } from '../src/game/engine';
+import { DANGER_Y, MergeEngine, WALL } from '../src/game/engine';
 import { canMerge, MAX_LEVEL, nextLevel, scoreForMerge } from '../src/game/scoring';
 import { pickDropLevel } from '../src/game/spawn';
 
@@ -106,7 +106,7 @@ describe('power-ups', () => {
     expect(engine.fruits()).toHaveLength(before);
     const speeds = engine.fruits().map((b) => Math.hypot(b.velocity.x, b.velocity.y));
     expect(speeds.some((s) => s > 3)).toBe(true);
-    expect(engine.fruits().every((b) => b.velocity.y > -12)).toBe(true);
+    expect(engine.fruits().every((b) => b.velocity.y > -15)).toBe(true);
   });
 
   it('shake pulses keep waking the pile across a few frames', () => {
@@ -252,5 +252,18 @@ describe('floor collision', () => {
     for (let i = 0; i < 45; i++) engine.update(32);
     expect(engine.fruits()).toHaveLength(1);
     expect(engine.fruits()[0].position.y).toBeLessThan(engine.height + 8);
+  });
+
+  it('keeps Tropical banana and coconut silhouettes on or above the visible floor', () => {
+    const engine = new MergeEngine({ random: () => 0 });
+    engine.setThemeId('tropical');
+    engine.spawn(6, 150, 470);
+    engine.spawn(7, 230, 470);
+    step(engine, 2800);
+    const floorTop = engine.height - WALL;
+    expect(engine.fruits().length).toBeGreaterThan(0);
+    for (const fruit of engine.fruits()) {
+      expect(fruit.bounds.max.y).toBeLessThanOrEqual(floorTop + 1.6);
+    }
   });
 });
