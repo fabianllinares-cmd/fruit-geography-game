@@ -5,3 +5,4 @@ test/output/
 *.local
 .DS_Store
 npm-debug.log*
+scripts/processed-assets-report.json

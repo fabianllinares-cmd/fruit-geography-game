@@ -58,16 +58,24 @@ export function visibleBoundsFromRgba(
   return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
 }
 
+export type SpriteFit = 'max' | 'min';
+
 /**
- * Map visible artwork into the existing circular physics diameter.
- * Longest visible side fills 2 * radius; aspect ratio is preserved.
+ * Map visible artwork into the physics diameter.
+ * `max` fits the longest visible side (round/tall sprites).
+ * `min` fits the shorter visible side (wide sprites such as strawberry).
  */
-export function fitDestRect(boundsW: number, boundsH: number, radius: number): DestRect {
+export function fitDestRect(
+  boundsW: number,
+  boundsH: number,
+  radius: number,
+  fit: SpriteFit = 'max',
+): DestRect {
   const diameter = radius * 2;
   if (boundsW <= 0 || boundsH <= 0) {
     return { x: -radius, y: -radius, w: diameter, h: diameter };
   }
-  const scale = diameter / Math.max(boundsW, boundsH);
+  const scale = diameter / (fit === 'min' ? Math.min(boundsW, boundsH) : Math.max(boundsW, boundsH));
   const w = boundsW * scale;
   const h = boundsH * scale;
   return { x: -w / 2, y: -h / 2, w, h };

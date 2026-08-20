@@ -29,19 +29,24 @@ export const tropicalTheme: Theme = {
       visual: { fill: '#e11d48', stroke: '#9f1239', highlight: '#fb7185', style: 'tropical' },
     },
     {
-      id: 'starfruit',
-      name: 'Starfruit',
-      visual: { fill: '#facc15', stroke: '#ca8a04', highlight: '#fef08a', style: 'tropical' },
-    },
-    {
       id: 'kiwi',
       name: 'Kiwi',
       visual: { fill: '#65a30d', stroke: '#3f6212', highlight: '#bef264', style: 'tropical' },
     },
     {
+      id: 'starfruit',
+      name: 'Starfruit',
+      visual: { fill: '#facc15', stroke: '#ca8a04', highlight: '#fef08a', style: 'tropical' },
+    },
+    {
       id: 'passionfruit',
       name: 'Passion fruit',
       visual: { fill: '#6d28d9', stroke: '#4c1d95', highlight: '#c4b5fd', style: 'tropical' },
+    },
+    {
+      id: 'dragonfruit',
+      name: 'Dragon fruit',
+      visual: { fill: '#fb7185', stroke: '#be123c', highlight: '#fecdd3', style: 'tropical' },
     },
     {
       id: 'mango',
@@ -54,19 +59,14 @@ export const tropicalTheme: Theme = {
       visual: { fill: '#facc15', stroke: '#ca8a04', highlight: '#fef08a', style: 'tropical' },
     },
     {
-      id: 'dragonfruit',
-      name: 'Dragon fruit',
-      visual: { fill: '#fb7185', stroke: '#be123c', highlight: '#fecdd3', style: 'tropical' },
+      id: 'coconut',
+      name: 'Coconut',
+      visual: { fill: '#78716c', stroke: '#44403c', highlight: '#e7e5e4', style: 'tropical' },
     },
     {
       id: 'papaya',
       name: 'Papaya',
       visual: { fill: '#fb923c', stroke: '#c2410c', highlight: '#ffedd5', style: 'tropical' },
-    },
-    {
-      id: 'coconut',
-      name: 'Coconut',
-      visual: { fill: '#78716c', stroke: '#44403c', highlight: '#e7e5e4', style: 'tropical' },
     },
     {
       id: 'pineapple',

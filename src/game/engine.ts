@@ -1,6 +1,8 @@
 import Matter from 'matter-js';
 import { ChargeMeter, energyFromMerge } from './charge';
+import { collisionSize } from './collision';
 import { DangerTracker, DANGER_HOLD_MS } from './danger';
+import { getTheme } from '../themes';
 import { RADII } from '../themes/types';
 import { canMerge, MAX_LEVEL, nextLevel, scoreForMerge } from './scoring';
 import { pickDropLevel } from './spawn';
@@ -321,8 +323,13 @@ export class MergeEngine {
     this.setDropX(this.dropX);
   }
 
+  private _objectId(level: number): string {
+    return getTheme(this.themeId).objects[level]?.id ?? 'blueberry';
+  }
+
   private _radius(level: number): number {
-    return RADII[Math.max(0, Math.min(RADII.length - 1, level))];
+    const idx = Math.max(0, Math.min(RADII.length - 1, level));
+    return collisionSize(this._objectId(level), RADII[idx]).bound;
   }
 
   private _buildBounds(): void {
@@ -351,8 +358,9 @@ export class MergeEngine {
   }
 
   private _makeFruit(level: number, x: number, y: number): FruitBody {
-    const radius = this._radius(level);
-    const body = Bodies.circle(x, y, radius, {
+    const baseRadius = RADII[Math.max(0, Math.min(RADII.length - 1, level))];
+    const size = collisionSize(this._objectId(level), baseRadius);
+    const opts = {
       restitution: 0.12,
       friction: 0.5,
       frictionStatic: 0.7,
@@ -360,7 +368,15 @@ export class MergeEngine {
       density: 0.0012 + level * 0.00012,
       slop: 0.04,
       sleepThreshold: 40,
-    }) as FruitBody;
+    };
+    const body = (
+      size.kind === 'circle'
+        ? Bodies.circle(x, y, size.hw, opts)
+        : Bodies.rectangle(x, y, size.hw * 2, size.hh * 2, {
+            ...opts,
+            chamfer: { radius: Math.min(size.hw, size.hh) * 0.22 },
+          })
+    ) as FruitBody;
     body.isFruit = true;
     body.gameLevel = level;
     body.bornAt = this.now();
