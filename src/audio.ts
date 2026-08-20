@@ -2,6 +2,8 @@ import { assetUrl } from './assets/catalog';
 
 const TROPICAL_MUSIC_SRC = 'assets/audio/bonsai-master.mp3';
 const MUSIC_VOLUME = 0.32;
+/** Tropical BGM plays through once per run; it must not loop. */
+export const TROPICAL_MUSIC_LOOP = false;
 
 export class AudioBus {
   enabled = true;
@@ -77,13 +79,14 @@ export class AudioBus {
     }
   }
 
-  /** Start or resume the single Tropical gameplay loop. Call from a user gesture. */
+  /** Start or resume the single Tropical gameplay track. Call from a user gesture. */
   playTropicalMusic(restart = false): void {
     this.wantTropical = true;
     if (!this.enabled || typeof Audio === 'undefined') return;
     const el = this._musicEl();
     this.musicTheme = 'tropical';
     if (restart) el.currentTime = 0;
+    if (this._trackEnded(el) && !restart) return;
     if (el.paused || restart) {
       void el.play().catch(() => {
         /* autoplay may still be blocked; a later gesture retries */
@@ -104,7 +107,9 @@ export class AudioBus {
   }
 
   resumeMusicIfNeeded(): void {
-    if (this.wantTropical && this.enabled) this.playTropicalMusic(false);
+    if (!this.wantTropical || !this.enabled) return;
+    if (this.music && this._trackEnded(this.music)) return;
+    this.playTropicalMusic(false);
   }
 
   syncThemeMusic(themeId: string, playing: boolean, restart = false): void {
@@ -112,12 +117,21 @@ export class AudioBus {
     else this.stopMusic();
   }
 
+  private _trackEnded(el: HTMLAudioElement): boolean {
+    if (el.ended) return true;
+    return el.duration > 0 && el.currentTime >= el.duration - 0.05;
+  }
+
   private _musicEl(): HTMLAudioElement {
     if (this.music) return this.music;
     const el = new Audio(assetUrl(TROPICAL_MUSIC_SRC));
-    el.loop = true;
+    el.loop = TROPICAL_MUSIC_LOOP;
     el.preload = 'auto';
     el.volume = MUSIC_VOLUME;
+    el.addEventListener('ended', () => {
+      if (!this.music) return;
+      this.music.pause();
+    });
     this.music = el;
     return el;
   }

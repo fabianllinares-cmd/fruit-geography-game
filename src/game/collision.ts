@@ -50,7 +50,24 @@ function capsule(aspect: number, fit: CollisionFit, inset = DEFAULT_INSET): Coll
 }
 
 function compound(aspect: number, fit: CollisionFit, parts: CollisionPart[], inset = 1): CollisionSpec {
-  return { kind: 'compound', aspect, fit, inset, parts };
+  return { kind: 'compound', aspect, fit, inset, parts: centerParts(parts) };
+}
+
+/** Keep compound centres of mass on the sprite origin so drawing stays aligned. */
+function centerParts(parts: CollisionPart[]): CollisionPart[] {
+  let mass = 0;
+  let cx = 0;
+  let cy = 0;
+  for (const part of parts) {
+    const w = part.r * part.r;
+    mass += w;
+    cx += part.x * w;
+    cy += part.y * w;
+  }
+  if (mass <= 0) return parts;
+  cx /= mass;
+  cy /= mass;
+  return parts.map((part) => ({ x: part.x - cx, y: part.y - cy, r: part.r }));
 }
 
 /** Shared collision specs for every object id used across themes. */
@@ -68,21 +85,34 @@ export const COLLISION: Record<string, CollisionSpec> = {
   pineapple: tall(0.62),
   watermelon: circle(1.0),
 
-  // Tropical — compact colliders around opaque mass, not sparse AABB padding.
-  // `fit` is unchanged so sprite display size stays the same.
-  raspberry: circle(1.68, 0.64, 'min'),
-  kiwi: circle(1.0, 0.94),
-  starfruit: circle(1.56, 0.74, 'min'),
-  passionfruit: circle(0.96, 0.93),
-  dragonfruit: circle(1.35, 0.68, 'min'),
-  mango: capsule(0.87, 'max', 0.92),
-  banana: compound(1.4, 'min', [
-    { x: -0.5, y: 0.28, r: 0.3 },
-    { x: 0.0, y: 0.02, r: 0.32 },
-    { x: 0.48, y: -0.3, r: 0.28 },
+  // Tropical — opaque-mass silhouettes. `fit` is unchanged so display size stays put.
+  // Previous tight circles (inset 0.64–0.74) let sprites overlap; these sit on the
+  // visible core without restoring sparse AABB boxes.
+  raspberry: circle(1.68, 0.86, 'min'),
+  kiwi: circle(1.0, 0.97),
+  starfruit: circle(1.56, 0.9, 'min'),
+  passionfruit: circle(0.96, 0.97),
+  dragonfruit: compound(1.35, 'min', [
+    { x: -0.26, y: 0.32, r: 0.64 },
+    { x: 0.0, y: 0.0, r: 0.66 },
+    { x: 0.26, y: -0.32, r: 0.62 },
   ]),
-  coconut: circle(1.33, 0.66, 'min'),
-  papaya: capsule(1.38, 'min', 0.68),
+  mango: capsule(0.87, 'max', 0.96),
+  banana: compound(1.4, 'min', [
+    { x: -0.54, y: 0.32, r: 0.38 },
+    { x: -0.16, y: 0.14, r: 0.43 },
+    { x: 0.2, y: -0.08, r: 0.42 },
+    { x: 0.54, y: -0.34, r: 0.36 },
+  ]),
+  coconut: compound(1.33, 'min', [
+    { x: -0.42, y: 0.1, r: 0.62 },
+    { x: 0.38, y: -0.08, r: 0.66 },
+  ]),
+  papaya: compound(1.38, 'min', [
+    { x: -0.5, y: 0.24, r: 0.68 },
+    { x: 0.0, y: 0.0, r: 0.72 },
+    { x: 0.52, y: -0.24, r: 0.64 },
+  ]),
 
   // Sports — balls stay circular; elongated objects use capsules.
   pingpong: circle(0.98, 0.95),
@@ -93,7 +123,13 @@ export const COLLISION: Record<string, CollisionSpec> = {
   volleyball: circle(0.97, 0.95),
   soccer: circle(1.0, 0.95),
   football: capsule(1.72, 'min', 0.96),
-  rugby: capsule(1.55, 'min', 0.95),
+  // Artwork is a diagonal elongated oval; compound circles follow that axis.
+  rugby: compound(1.55, 'min', [
+    { x: -0.418, y: 0.313, r: 0.78 },
+    { x: -0.139, y: 0.104, r: 0.78 },
+    { x: 0.139, y: -0.104, r: 0.78 },
+    { x: 0.418, y: -0.313, r: 0.78 },
+  ]),
   basketball: circle(0.95, 0.95),
   trophy: tall(0.62, 0.92),
 
@@ -101,7 +137,7 @@ export const COLLISION: Record<string, CollisionSpec> = {
   ice: circle(1.02),
   shot: tall(0.62, 0.93),
   whiskey: tall(0.86, 0.94),
-  champagne: tall(0.26, 0.92),
+  champagne: tall(0.28, 0.93),
   wine_white: tall(0.42, 0.92),
   wine_red: tall(0.46, 0.92),
   martini: tall(0.7, 0.9),

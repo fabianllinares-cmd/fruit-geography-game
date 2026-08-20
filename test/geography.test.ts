@@ -24,8 +24,11 @@ function assertValidBank(bank: typeof QUESTIONS, min = 40): void {
 }
 
 describe('geography bank', () => {
-  it('includes at least 100 unique questions across several categories', () => {
-    expect(QUESTIONS.length).toBeGreaterThanOrEqual(100);
+  it('includes at least 180 unique Classic geography questions', () => {
+    expect(CLASSIC_QUESTIONS.length).toBeGreaterThanOrEqual(180);
+    expect(CLASSIC_QUESTIONS.length).toBeLessThanOrEqual(220);
+    expect(TROPICAL_QUESTIONS.length).toBeGreaterThanOrEqual(100);
+    expect(TROPICAL_QUESTIONS.length).toBeLessThanOrEqual(140);
     const ids = new Set(QUESTIONS.map((q) => q.id));
     expect(ids.size).toBe(QUESTIONS.length);
     const categories = new Set(QUESTIONS.map((q) => q.category));
@@ -57,8 +60,8 @@ describe('geography bank', () => {
 
 describe('theme question banks', () => {
   it('keeps Classic and Tropical as geography, Sports as math, Night as astronomy', () => {
-    assertValidBank(CLASSIC_QUESTIONS, 100);
-    assertValidBank(TROPICAL_QUESTIONS, 50);
+    assertValidBank(CLASSIC_QUESTIONS, 180);
+    assertValidBank(TROPICAL_QUESTIONS, 100);
     assertValidBank(SPORTS_QUESTIONS, 50);
     assertValidBank(NIGHT_QUESTIONS, 50);
     expect(questionsFor('classic').every((q) => q.category !== 'Math')).toBe(true);

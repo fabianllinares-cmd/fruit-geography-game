@@ -493,7 +493,7 @@ export class App {
       this.engine.reset(this.theme.id);
       this._clearOverlays();
       this._syncHud();
-      audio.syncThemeMusic(this.theme.id, true);
+      audio.syncThemeMusic(this.theme.id, true, true);
     });
     overlay.querySelector('[data-act="theme"]')?.addEventListener('click', () => this._showThemes(false));
   }
@@ -532,7 +532,7 @@ export class App {
       clearGame();
       this._clearOverlays();
       this._syncHud();
-      audio.syncThemeMusic(this.theme.id, true);
+      audio.syncThemeMusic(this.theme.id, true, true);
     });
   }
 

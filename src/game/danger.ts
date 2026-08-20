@@ -7,17 +7,20 @@ export class DangerTracker {
   constructor(private readonly holdMs = DANGER_HOLD_MS) {}
 
   /**
-   * Advance the danger timer. Occupied objects must stay above the line
-   * continuously; bouncing through it briefly does not end the game.
+   * Advance the danger timer. `occupying` starts/continues the hold that can
+   * end the game. `warning` only drives the HUD/line highlight so objects
+   * that are merely high in the bowl do not look alarming.
+   * Occupied objects must stay above the line continuously; bouncing through
+   * it briefly does not end the game.
    */
-  update(occupiedAboveLine: boolean, dtMs: number): boolean {
-    if (occupiedAboveLine) {
+  update(occupying: boolean, dtMs: number, warning = occupying): boolean {
+    if (occupying) {
       this.inDanger = true;
       this.elapsed += dtMs;
       return this.elapsed >= this.holdMs;
     }
-    this.inDanger = false;
     this.elapsed = 0;
+    this.inDanger = warning;
     return false;
   }
 
