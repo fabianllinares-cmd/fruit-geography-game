@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "source": "Classic V4 canonical fruit pack plus existing theme-specific sprites",
+  "version": 3,
+  "source": "Classic V4 canonical fruit pack plus approved Tropical, Sports, and Drinks production artwork",
   "counts": {
     "item_sprites": 42,
     "backgrounds": 5,
@@ -131,13 +131,13 @@
       },
       {
         "level": 2,
-        "id": "starfruit",
-        "file": "assets/images/tropical/tropical_02_starfruit.png"
+        "id": "kiwi",
+        "file": "assets/images/tropical/tropical_02_kiwi.png"
       },
       {
         "level": 3,
-        "id": "kiwi",
-        "file": "assets/images/tropical/tropical_03_kiwi.png"
+        "id": "starfruit",
+        "file": "assets/images/tropical/tropical_03_starfruit.png"
       },
       {
         "level": 4,
@@ -146,28 +146,28 @@
       },
       {
         "level": 5,
-        "id": "mango",
-        "file": "assets/images/tropical/tropical_05_mango.png"
+        "id": "dragonfruit",
+        "file": "assets/images/tropical/tropical_05_dragonfruit.png"
       },
       {
         "level": 6,
-        "id": "banana",
-        "file": "assets/images/tropical/tropical_06_banana.png"
+        "id": "mango",
+        "file": "assets/images/tropical/tropical_06_mango.png"
       },
       {
         "level": 7,
-        "id": "dragonfruit",
-        "file": "assets/images/tropical/tropical_07_dragonfruit.png"
+        "id": "banana",
+        "file": "assets/images/tropical/tropical_07_banana.png"
       },
       {
         "level": 8,
-        "id": "papaya",
-        "file": "assets/images/tropical/tropical_08_papaya.png"
+        "id": "coconut",
+        "file": "assets/images/tropical/tropical_08_coconut.png"
       },
       {
         "level": 9,
-        "id": "coconut",
-        "file": "assets/images/tropical/tropical_09_coconut.png"
+        "id": "papaya",
+        "file": "assets/images/tropical/tropical_09_papaya.png"
       },
       {
         "level": 10,
@@ -183,53 +183,53 @@
     "sports": [
       {
         "level": 1,
-        "id": "shuttlecock",
-        "file": "assets/images/sports/sports_01_shuttlecock.png"
+        "id": "pingpong",
+        "file": "assets/images/sports/sports_01_pingpong.png"
       },
       {
         "level": 2,
-        "id": "pingpong",
-        "file": "assets/images/sports/sports_02_pingpong.png"
+        "id": "golf",
+        "file": "assets/images/sports/sports_02_golf.png"
       },
       {
         "level": 3,
-        "id": "tennis",
-        "file": "assets/images/sports/sports_03_tennis.png"
+        "id": "8ball",
+        "file": "assets/images/sports/sports_03_8ball.png"
       },
       {
         "level": 4,
-        "id": "baseball",
-        "file": "assets/images/sports/sports_04_baseball.png"
+        "id": "tennis",
+        "file": "assets/images/sports/sports_04_tennis.png"
       },
       {
         "level": 5,
-        "id": "softball",
-        "file": "assets/images/sports/sports_05_softball.png"
+        "id": "baseball",
+        "file": "assets/images/sports/sports_05_baseball.png"
       },
       {
         "level": 6,
-        "id": "8ball",
-        "file": "assets/images/sports/sports_06_8ball.png"
+        "id": "volleyball",
+        "file": "assets/images/sports/sports_06_volleyball.png"
       },
       {
         "level": 7,
-        "id": "volleyball",
-        "file": "assets/images/sports/sports_07_volleyball.png"
+        "id": "soccer",
+        "file": "assets/images/sports/sports_07_soccer.png"
       },
       {
         "level": 8,
-        "id": "basketball",
-        "file": "assets/images/sports/sports_08_basketball.png"
+        "id": "football",
+        "file": "assets/images/sports/sports_08_football.png"
       },
       {
         "level": 9,
-        "id": "soccer",
-        "file": "assets/images/sports/sports_09_soccer.png"
+        "id": "rugby",
+        "file": "assets/images/sports/sports_09_rugby.png"
       },
       {
         "level": 10,
-        "id": "football",
-        "file": "assets/images/sports/sports_10_football.png"
+        "id": "basketball",
+        "file": "assets/images/sports/sports_10_basketball.png"
       },
       {
         "level": 11,
@@ -245,48 +245,48 @@
       },
       {
         "level": 2,
-        "id": "olive",
-        "file": "assets/images/drinks/drinks_02_olive.png"
+        "id": "shot",
+        "file": "assets/images/drinks/drinks_02_shot.png"
       },
       {
         "level": 3,
-        "id": "shot",
-        "file": "assets/images/drinks/drinks_03_shot.png"
+        "id": "whiskey",
+        "file": "assets/images/drinks/drinks_03_whiskey.png"
       },
       {
         "level": 4,
-        "id": "wine",
-        "file": "assets/images/drinks/drinks_04_wine.png"
+        "id": "champagne",
+        "file": "assets/images/drinks/drinks_04_champagne.png"
       },
       {
         "level": 5,
-        "id": "martini",
-        "file": "assets/images/drinks/drinks_05_martini.png"
+        "id": "wine_white",
+        "file": "assets/images/drinks/drinks_05_wine_white.png"
       },
       {
         "level": 6,
-        "id": "whiskey",
-        "file": "assets/images/drinks/drinks_06_whiskey.png"
+        "id": "wine_red",
+        "file": "assets/images/drinks/drinks_06_wine_red.png"
       },
       {
         "level": 7,
-        "id": "cocktail",
-        "file": "assets/images/drinks/drinks_07_cocktail.png"
+        "id": "martini",
+        "file": "assets/images/drinks/drinks_07_martini.png"
       },
       {
         "level": 8,
-        "id": "margarita",
-        "file": "assets/images/drinks/drinks_08_margarita.png"
+        "id": "long",
+        "file": "assets/images/drinks/drinks_08_long.png"
       },
       {
         "level": 9,
-        "id": "mojito",
-        "file": "assets/images/drinks/drinks_09_mojito.png"
+        "id": "beer",
+        "file": "assets/images/drinks/drinks_09_beer.png"
       },
       {
         "level": 10,
-        "id": "champagne",
-        "file": "assets/images/drinks/drinks_10_champagne.png"
+        "id": "cocktail",
+        "file": "assets/images/drinks/drinks_10_cocktail.png"
       },
       {
         "level": 11,

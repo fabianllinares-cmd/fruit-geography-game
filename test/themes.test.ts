@@ -39,23 +39,51 @@ describe('themes', () => {
     );
     expect(tropicalTheme.objects.map((object) => object.id)).toEqual([
       'raspberry',
-      'starfruit',
       'kiwi',
+      'starfruit',
       'passionfruit',
+      'dragonfruit',
       'mango',
       'banana',
-      'dragonfruit',
-      'papaya',
       'coconut',
+      'papaya',
       'pineapple',
       'watermelon',
     ]);
     expect(tropicalTheme.objects[9].visual.sprite).toBe(classicTheme.objects[9].visual.sprite);
     expect(tropicalTheme.objects[10].visual.sprite).toBe(classicTheme.objects[10].visual.sprite);
-    expect(tropicalTheme.objects[2].name).toBe('Kiwi');
-    expect(sportsTheme.objects[0].name).toBe('Shuttlecock');
-    expect(sportsTheme.objects[7].name).toBe('Basketball');
-    expect(drinksTheme.objects[4].name).toBe('Martini');
+    expect(tropicalTheme.objects[1].name).toBe('Kiwi');
+    expect(sportsTheme.objects.map((object) => object.id)).toEqual([
+      'pingpong',
+      'golf',
+      '8ball',
+      'tennis',
+      'baseball',
+      'volleyball',
+      'soccer',
+      'football',
+      'rugby',
+      'basketball',
+      'trophy',
+    ]);
+    expect(sportsTheme.objects[0].name).toBe('Ping-pong ball');
+    expect(sportsTheme.objects[6].name).toBe('Soccer ball');
+    expect(sportsTheme.objects[10].name).toBe('Trophy');
+    expect(drinksTheme.objects.map((object) => object.id)).toEqual([
+      'ice',
+      'shot',
+      'whiskey',
+      'champagne',
+      'wine_white',
+      'wine_red',
+      'martini',
+      'long',
+      'beer',
+      'cocktail',
+      'bottle',
+    ]);
+    expect(drinksTheme.objects[4].name).toBe('White wine glass');
+    expect(drinksTheme.objects[10].name).toBe('Champagne bottle');
     expect(getTheme('sports').id).toBe('sports');
     expect(getTheme('missing').id).toBe('classic');
   });

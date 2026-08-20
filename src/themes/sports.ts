@@ -24,14 +24,19 @@ export const sportsTheme: Theme = {
   },
   objects: buildObjects('sports', [
     {
-      id: 'shuttlecock',
-      name: 'Shuttlecock',
+      id: 'pingpong',
+      name: 'Ping-pong ball',
+      visual: { fill: '#fef08a', stroke: '#f97316', highlight: '#ffffff', style: 'ball' },
+    },
+    {
+      id: 'golf',
+      name: 'Golf ball',
       visual: { fill: '#f8fafc', stroke: '#cbd5e1', highlight: '#ffffff', style: 'ball' },
     },
     {
-      id: 'pingpong',
-      name: 'Ping-pong ball',
-      visual: { fill: '#f8fafc', stroke: '#f97316', highlight: '#ffffff', style: 'ball' },
+      id: '8ball',
+      name: '8-ball',
+      visual: { fill: '#111827', stroke: '#f8fafc', highlight: '#64748b', style: 'ball' },
     },
     {
       id: 'tennis',
@@ -44,24 +49,9 @@ export const sportsTheme: Theme = {
       visual: { fill: '#fff7ed', stroke: '#ef4444', highlight: '#ffffff', style: 'ball' },
     },
     {
-      id: 'softball',
-      name: 'Softball',
-      visual: { fill: '#fde68a', stroke: '#d97706', highlight: '#fef9c3', style: 'ball' },
-    },
-    {
-      id: '8ball',
-      name: '8-ball',
-      visual: { fill: '#111827', stroke: '#f8fafc', highlight: '#64748b', style: 'ball' },
-    },
-    {
       id: 'volleyball',
       name: 'Volleyball',
       visual: { fill: '#fff7ed', stroke: '#f97316', highlight: '#ffffff', style: 'ball' },
-    },
-    {
-      id: 'basketball',
-      name: 'Basketball',
-      visual: { fill: '#ea580c', stroke: '#111827', highlight: '#fdba74', style: 'ball' },
     },
     {
       id: 'soccer',
@@ -74,8 +64,18 @@ export const sportsTheme: Theme = {
       visual: { fill: '#7c2d12', stroke: '#f8fafc', highlight: '#fdba74', style: 'ball' },
     },
     {
+      id: 'rugby',
+      name: 'Rugby ball',
+      visual: { fill: '#92400e', stroke: '#f8fafc', highlight: '#fdba74', style: 'ball' },
+    },
+    {
+      id: 'basketball',
+      name: 'Basketball',
+      visual: { fill: '#ea580c', stroke: '#111827', highlight: '#fdba74', style: 'ball' },
+    },
+    {
       id: 'trophy',
-      name: 'Trophy ball',
+      name: 'Trophy',
       visual: { fill: '#eab308', stroke: '#854d0e', highlight: '#fef08a', style: 'ball' },
     },
   ]),

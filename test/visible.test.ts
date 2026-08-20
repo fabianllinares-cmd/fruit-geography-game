@@ -26,17 +26,12 @@ describe('visible sprite bounds', () => {
     expect(bounds).toEqual({ x: 2, y: 3, w: 2, h: 2 });
   });
 
-  it('fits the longest visible side to the physics diameter', () => {
-    const round = fitDestRect(100, 100, 20);
-    expect(round).toEqual({ x: -20, y: -20, w: 40, h: 40 });
-    const tall = fitDestRect(50, 100, 20);
-    expect(tall.w).toBe(20);
-    expect(tall.h).toBe(40);
-    expect(tall.x).toBe(-10);
-    expect(tall.y).toBe(-20);
-    const wide = fitDestRect(100, 50, 20);
-    expect(wide.w).toBe(40);
-    expect(wide.h).toBe(20);
+  it('fits the shorter visible side when requested', () => {
+    const wide = fitDestRect(100, 50, 20, 'min');
+    expect(wide.h).toBe(40);
+    expect(wide.w).toBe(80);
+    expect(wide.x).toBe(-40);
+    expect(wide.y).toBe(-20);
   });
 
   it('keeps Night glow as alpha drop-shadows rather than a box glow', () => {

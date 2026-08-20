@@ -71,23 +71,24 @@ describe('production asset pack', () => {
     expect(ASSET_MANIFEST.themes.night.map((row) => row.id)).toEqual([...CLASSIC_FRUIT_IDS]);
     expect(ASSET_MANIFEST.themes.classic.map((row) => row.file)).toEqual(CANONICAL_FILES);
     expect(ASSET_MANIFEST.themes.night.map((row) => row.file)).toEqual(CANONICAL_FILES);
-    expect(ASSET_MANIFEST.themes.sports[0].id).toBe('shuttlecock');
+    expect(ASSET_MANIFEST.themes.sports[0].id).toBe('pingpong');
+    expect(ASSET_MANIFEST.themes.sports[6].file).toBe('assets/images/sports/sports_07_soccer.png');
     expect(ASSET_MANIFEST.themes.drinks[10].id).toBe('bottle');
-    expect(ASSET_MANIFEST.themes.tropical[5].id).toBe('banana');
+    expect(ASSET_MANIFEST.themes.tropical[1].id).toBe('kiwi');
   });
 
   it('deduplicates only Tropical fruits that match a canonical Classic fruit', () => {
     const tropical = ASSET_MANIFEST.themes.tropical;
     expect(tropical.map((row) => row.id)).toEqual([
       'raspberry',
-      'starfruit',
       'kiwi',
+      'starfruit',
       'passionfruit',
+      'dragonfruit',
       'mango',
       'banana',
-      'dragonfruit',
-      'papaya',
       'coconut',
+      'papaya',
       'pineapple',
       'watermelon',
     ]);
@@ -99,11 +100,15 @@ describe('production asset pack', () => {
     }
   });
 
-  it('removes superseded Classic, Night, and duplicate Tropical fruit files', () => {
+  it('removes superseded theme sprite files', () => {
     expect(existsSync(publicFile('assets/images/classic/classic_01_cherry.png'))).toBe(false);
     expect(existsSync(publicFile('assets/images/night/night_01_cherry.png'))).toBe(false);
     expect(existsSync(publicFile('assets/images/tropical/tropical_10_pineapple.png'))).toBe(false);
     expect(existsSync(publicFile('assets/images/tropical/tropical_11_watermelon.png'))).toBe(false);
-    expect(existsSync(publicFile('assets/images/tropical/tropical_01_raspberry.png'))).toBe(true);
+    expect(existsSync(publicFile('assets/images/tropical/tropical_02_kiwi.png'))).toBe(true);
+    expect(existsSync(publicFile('assets/images/sports/sports_01_shuttlecock.png'))).toBe(false);
+    expect(existsSync(publicFile('assets/images/sports/sports_07_soccer.png'))).toBe(true);
+    expect(existsSync(publicFile('assets/images/drinks/drinks_02_olive.png'))).toBe(false);
+    expect(existsSync(publicFile('assets/images/drinks/drinks_08_long.png'))).toBe(true);
   });
 });

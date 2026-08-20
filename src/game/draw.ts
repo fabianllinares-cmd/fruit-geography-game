@@ -1,8 +1,9 @@
 import { getDisplaySprite, getVisibleBounds } from '../assets/loader';
 import { NIGHT_GLOW_FILTER, fitDestRect, sourceSize } from '../assets/visible';
+import { collisionFor } from './collision';
 import type { ObjectDef } from '../themes/types';
 
-/** Draw a production sprite inside the existing circular collision diameter. */
+/** Draw a production sprite fitted to its silhouette-aware collision bounds. */
 export function drawObject(ctx: CanvasRenderingContext2D, def: ObjectDef, angle: number, scale = 1): void {
   const r = def.radius * scale;
   const img = getDisplaySprite(def.visual.sprite);
@@ -14,7 +15,7 @@ export function drawObject(ctx: CanvasRenderingContext2D, def: ObjectDef, angle:
     const size = sourceSize(img);
     if (size.w > 0 && size.h > 0) {
       const bounds = getVisibleBounds(def.visual.sprite) ?? { x: 0, y: 0, w: size.w, h: size.h };
-      const dest = fitDestRect(bounds.w, bounds.h, r);
+      const dest = fitDestRect(bounds.w, bounds.h, r, collisionFor(def.id).fit);
       if (def.visual.style === 'night-fruit') {
         ctx.filter = NIGHT_GLOW_FILTER;
       } else {
