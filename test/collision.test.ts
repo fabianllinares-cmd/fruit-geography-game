@@ -138,4 +138,25 @@ describe('collision silhouettes', () => {
     expect(collisionSize('banana', RADII[6]).parts?.length).toBeGreaterThanOrEqual(4);
     expect(collisionSize('coconut', RADII[7]).parts?.length).toBeGreaterThanOrEqual(3);
   });
+
+  it('keeps the banana sprite origin on the compound COM without changing display size', () => {
+    const spec = collisionFor('banana');
+    expect(spec.fit).toBe('min');
+    expect(spec.aspect).toBe(1.4);
+    expect(spec.alignX).not.toBe(0);
+    expect(spec.alignY).not.toBe(0);
+    const parts = spec.parts ?? [];
+    let mass = 0;
+    let cx = 0;
+    let cy = 0;
+    for (const part of parts) {
+      const w = part.r * part.r;
+      mass += w;
+      cx += part.x * w;
+      cy += part.y * w;
+    }
+    expect(mass).toBeGreaterThan(0);
+    expect(cx / mass).toBeCloseTo(0, 8);
+    expect(cy / mass).toBeCloseTo(0, 8);
+  });
 });

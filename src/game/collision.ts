@@ -68,6 +68,20 @@ function capsule(
   return { kind: 'capsule', aspect, fit, inset, alignX, alignY };
 }
 
+function partsCentroid(parts: CollisionPart[]): { cx: number; cy: number } {
+  let mass = 0;
+  let cx = 0;
+  let cy = 0;
+  for (const part of parts) {
+    const w = part.r * part.r;
+    mass += w;
+    cx += part.x * w;
+    cy += part.y * w;
+  }
+  if (mass <= 0) return { cx: 0, cy: 0 };
+  return { cx: cx / mass, cy: cy / mass };
+}
+
 function compound(
   aspect: number,
   fit: CollisionFit,
@@ -78,20 +92,20 @@ function compound(
   return { kind: 'compound', aspect, fit, inset: 1, parts: centerParts(parts), alignX, alignY };
 }
 
-/** Keep compound centres of mass on the sprite origin so drawing stays aligned. */
+/**
+ * Compound whose sprite origin tracks the physics COM.
+ * Matter.js recentres compound parts onto their mass centroid; drawing must
+ * apply the same shift or a C-shaped fruit (banana) floats above contact.
+ */
+function compoundOnCom(aspect: number, fit: CollisionFit, parts: CollisionPart[]): CollisionSpec {
+  const { cx, cy } = partsCentroid(parts);
+  return compound(aspect, fit, parts, cx, cy);
+}
+
+/** Keep compound centres of mass on the body origin so spawn stays at COM. */
 function centerParts(parts: CollisionPart[]): CollisionPart[] {
-  let mass = 0;
-  let cx = 0;
-  let cy = 0;
-  for (const part of parts) {
-    const w = part.r * part.r;
-    mass += w;
-    cx += part.x * w;
-    cy += part.y * w;
-  }
-  if (mass <= 0) return parts;
-  cx /= mass;
-  cy /= mass;
+  const { cx, cy } = partsCentroid(parts);
+  if (cx === 0 && cy === 0) return parts;
   return parts.map((part) => ({ x: part.x - cx, y: part.y - cy, r: part.r }));
 }
 
@@ -130,7 +144,10 @@ export const COLLISION: Record<string, CollisionSpec> = {
     { x: 0.43, y: -0.45, r: 0.58 },
   ]),
   mango: capsule(0.87, 'max', 0.995),
-  banana: compound(1.4, 'min', [
+  // Circles follow the opaque banana crescent in crop-centred dest space.
+  // `compoundOnCom` stores that centroid as alignX/Y so drawObject can put the
+  // sprite on the same origin Matter uses after COM recentering.
+  banana: compoundOnCom(1.4, 'min', [
     { x: -0.56, y: 0.64, r: 0.35 },
     { x: -0.11, y: 0.56, r: 0.37 },
     { x: 0.29, y: 0.34, r: 0.36 },

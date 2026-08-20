@@ -22,12 +22,14 @@ const DROP_COOLDOWN_MS = 420;
 const PHYSICS_STEP_MS = 1000 / 60;
 /** Several lateral pulses; horizontal agitation is stronger than lift. */
 export const SHAKE_PULSES = 5;
-export const SHAKE_KICK_X = 37;
-export const SHAKE_KICK_Y_BASE = 3.9;
-export const SHAKE_KICK_Y_RANGE = 6.0;
-export const SHAKE_SPIN = 0.26;
-export const SHAKE_START_SCALE = 0.7;
+export const SHAKE_KICK_X = 42;
+export const SHAKE_KICK_Y_BASE = 4.5;
+export const SHAKE_KICK_Y_RANGE = 7.0;
+export const SHAKE_SPIN = 0.27;
+export const SHAKE_START_SCALE = 0.85;
 export const SHAKE_MAX_UP = 14;
+export const SHAKE_PULSE_BASE = 0.36;
+export const SHAKE_PULSE_STEP = 0.09;
 const SETTLED_SPEED = 0.5;
 const SETTLED_SPIN = 0.1;
 /** Show the danger warning when a settled silhouette is this close to the line. */
@@ -286,7 +288,7 @@ export class MergeEngine {
     this.chain = 0;
 
     if (this.shakePulses > 0) {
-      this._shakePulse(0.28 + this.shakePulses * 0.07);
+      this._shakePulse(SHAKE_PULSE_BASE + this.shakePulses * SHAKE_PULSE_STEP);
       this.shakePulses -= 1;
     }
 
@@ -373,10 +375,10 @@ export class MergeEngine {
     this.shakeDir *= -1;
     for (const fruit of this.fruits()) {
       Sleeping.set(fruit, false);
-      const kickX = dir * Math.abs(this.random() - 0.5) * SHAKE_KICK_X * scale;
+      const kickX = dir * (0.5 + this.random() * 0.5) * (SHAKE_KICK_X * 0.5) * scale;
       const kickY = -(SHAKE_KICK_Y_BASE + this.random() * SHAKE_KICK_Y_RANGE) * scale;
       Body.setVelocity(fruit, {
-        x: fruit.velocity.x * 0.35 + kickX,
+        x: fruit.velocity.x * 0.45 + kickX,
         y: Math.max(-SHAKE_MAX_UP, fruit.velocity.y * 0.35 + kickY),
       });
       Body.setAngularVelocity(fruit, (this.random() - 0.5) * SHAKE_SPIN * scale);
