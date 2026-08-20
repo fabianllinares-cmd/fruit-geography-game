@@ -5,8 +5,14 @@ import { audio } from '../audio';
 import { DANGER_HOLD_MS } from '../game/danger';
 import { MergeEngine } from '../game/engine';
 import { GameRenderer } from '../game/render';
-import { QuestionDeck, isCorrect, type PresentedQuestion } from '../geography/challenge';
-import { QUESTIONS } from '../geography/questions';
+import {
+  QuestionDeck,
+  isCorrect,
+  questionCount,
+  questionsFor,
+  difficultyFor,
+  type PresentedQuestion,
+} from '../questions';
 import {
   clearGame,
   getBest,
@@ -23,7 +29,7 @@ import type { PowerUpId } from '../game/types';
 
 const POWERUPS: Array<{ id: PowerUpId; effect: 'globe' | 'bubbles' | 'target'; name: string; hint: string }> = [
   { id: 'earthquake', effect: 'globe', name: 'Shake', hint: 'Jostle the pile' },
-  { id: 'remove-small', effect: 'bubbles', name: 'Sweep', hint: 'Clear small objects' },
+  { id: 'remove-small', effect: 'bubbles', name: 'Sweep', hint: 'Clear levels 1–3' },
   { id: 'target-remove', effect: 'target', name: 'Target', hint: 'Pick one to remove' },
 ];
 
@@ -63,6 +69,7 @@ export class App {
     if (menu && !menu.querySelector('img')) {
       menu.append(spriteImg(buttonPath('menu'), 'Menu', 'ui-icon'));
     }
+    this._syncSoundButton();
     setSprite(document.getElementById('energy-icon'), effectPath('energy'), '', 'ui-icon energy-bolt');
     const targetLabel = document.querySelector('#target-banner span');
     if (targetLabel && !targetLabel.querySelector('img')) {
@@ -163,6 +170,7 @@ export class App {
       }
     });
     document.getElementById('menu-btn')!.addEventListener('click', () => this._showMenu());
+    document.getElementById('sound-btn')!.addEventListener('click', () => this._toggleSound());
     document.getElementById('target-cancel')!.addEventListener('click', () => this._leaveTarget());
 
     window.addEventListener('keydown', (e) => {
@@ -175,9 +183,11 @@ export class App {
       if (document.hidden) {
         this.engine.addPause('hidden');
         this._persist();
+        audio.pauseMusic();
       } else {
         this.engine.removePause('hidden');
         this.lastTs = performance.now();
+        audio.resumeMusicIfNeeded();
       }
     });
     window.addEventListener('pagehide', () => this._persist());
@@ -199,17 +209,18 @@ export class App {
       btn.addEventListener('click', () => this._requestPower(p.id));
       row.appendChild(btn);
     }
-    this._syncEnergy(this.engine.charge.energy, this.engine.charge.ready);
+    this._syncEnergy(this.engine.charge.energy, this.engine.charge.isReady(this.engine.challengeThreshold));
   }
 
   private _requestPower(id: PowerUpId): void {
     if (this.targetMode || this.engine.gameOver) return;
-    if (!this.engine.charge.ready) return;
+    if (!this.engine.charge.isReady(this.engine.challengeThreshold)) return;
     if (!this.engine.tryConsumeChallenge()) return;
     this._syncEnergy(this.engine.charge.energy, false);
     this.pendingPower = id;
     this.engine.addPause('question');
-    const question = this.deck.draw();
+    const tier = difficultyFor(this.engine.score, this.engine.highestLevel, this.engine.droppedCount);
+    const question = this.deck.draw(this.theme.id, tier);
     this._showQuestion(question);
   }
 
@@ -263,7 +274,7 @@ export class App {
     const top = this.theme.objects[this.engine.highestLevel] ?? this.theme.objects[0];
     setSprite(document.getElementById('highest-emoji'), top.visual.sprite, top.name);
     this._syncNext(this.engine.currentLevel, this.engine.nextLevel);
-    this._syncEnergy(this.engine.charge.energy, this.engine.charge.ready);
+    this._syncEnergy(this.engine.charge.energy, this.engine.charge.isReady(this.engine.challengeThreshold));
   }
 
   private _syncNext(current: number, next: number): void {
@@ -281,6 +292,12 @@ export class App {
     fill.style.width = `${energy}%`;
     const status = document.getElementById('energy-status')!;
     status.textContent = ready ? 'Challenge ready!' : 'Merges charge a quiz';
+    const label = document.querySelector('.energy-label');
+    if (label) {
+      const subject = quizSubject(this.theme.id);
+      const text = label.childNodes[label.childNodes.length - 1];
+      if (text && text.nodeType === Node.TEXT_NODE) text.textContent = ` ${subject} energy`;
+    }
     document.querySelector('.energy')!.classList.toggle('ready', ready);
     for (const btn of document.querySelectorAll<HTMLButtonElement>('.powerup')) {
       btn.classList.toggle('ready', ready);
@@ -309,9 +326,10 @@ export class App {
   }
 
   private _showThemes(cancellable: boolean): void {
+    if (!cancellable) audio.stopMusic();
     const overlay = this._card(
       `<h2 class="card-title"><img class="ui-icon title-icon" alt="" src="${assetUrl(effectPath('map'))}"> Choose your game</h2>
-       <p>Same physics. New look. Geography still unlocks the power-ups.</p>
+       <p>Same physics. New look. A correct quiz answer unlocks the power-ups.</p>
        <div class="theme-grid" id="theme-grid"></div>
        ${cancellable ? '<button type="button" class="btn btn-ghost" data-act="close">Keep playing</button>' : ''}`,
       'theme',
@@ -361,6 +379,7 @@ export class App {
     }
     this._clearOverlays();
     this._syncHud();
+    audio.syncThemeMusic(theme.id, true, newGame);
   }
 
   private _showContinue(themeId: string, score: number): void {
@@ -383,6 +402,7 @@ export class App {
       }
       this._clearOverlays();
       this._syncHud();
+      audio.syncThemeMusic(this.theme.id, true);
     });
     overlay.querySelector('[data-act="new"]')?.addEventListener('click', () => {
       clearGame();
@@ -451,6 +471,7 @@ export class App {
   }
 
   private _showGameOver(score: number, highest: number, correct: number, asked: number): void {
+    audio.pauseMusic();
     const def = this.theme.objects[highest];
     const accuracy = asked ? `${correct} / ${asked}` : '—';
     const overlay = this._card(
@@ -459,7 +480,7 @@ export class App {
          <div><span class="muted">Score</span><b>${score}</b></div>
          <div><span class="muted">Best</span><b>${getBest(this.theme.id)}</b></div>
          <div><span class="muted">Highest</span><b class="highest-stat"><img class="sprite" alt="" src="${assetUrl(def?.visual.sprite ?? this.theme.objects[0].visual.sprite)}"> ${def?.name ?? ''}</b></div>
-         <div><span class="muted">Geography</span><b>${accuracy}</b></div>
+         <div><span class="muted">${quizSubject(this.theme.id)}</span><b>${accuracy}</b></div>
        </div>
        <div class="btn-row">
          <button type="button" class="btn btn-primary btn-with-icon" data-act="again"><img class="ui-icon" alt="" src="${assetUrl(buttonPath('play'))}"> Play again</button>
@@ -472,6 +493,7 @@ export class App {
       this.engine.reset(this.theme.id);
       this._clearOverlays();
       this._syncHud();
+      audio.syncThemeMusic(this.theme.id, true);
     });
     overlay.querySelector('[data-act="theme"]')?.addEventListener('click', () => this._showThemes(false));
   }
@@ -480,8 +502,8 @@ export class App {
     const asked = this.engine.geoAsked;
     const overlay = this._card(
       `<h2>Fruit Geography</h2>
-       <p>Drag to aim, release to drop. Match two of the same to merge. Fill geography energy, then answer a question to use a power-up.</p>
-       <p class="muted">Questions this run: ${this.engine.geoCorrect} / ${asked || 0} · Bank: ${QUESTIONS.length}</p>
+       <p>Drag to aim, release to drop. Match two of the same to merge. Fill quiz energy, then answer a question to use a power-up.</p>
+       <p class="muted">Questions this run: ${this.engine.geoCorrect} / ${asked || 0} · Bank: ${questionCount(this.theme.id)}</p>
        <div class="sound-row">
          <span>Sound</span>
          <button type="button" class="icon-btn sound-btn" data-act="sound" aria-label="${audio.enabled ? 'Mute sound' : 'Unmute sound'}">
@@ -497,6 +519,7 @@ export class App {
     overlay.querySelector('[data-act="sound"]')?.addEventListener('click', (e) => {
       audio.setEnabled(!audio.enabled);
       saveSoundEnabled(audio.enabled);
+      this._syncSoundButton();
       const btn = e.currentTarget as HTMLButtonElement;
       btn.setAttribute('aria-label', audio.enabled ? 'Mute sound' : 'Unmute sound');
       const img = btn.querySelector('img');
@@ -509,7 +532,24 @@ export class App {
       clearGame();
       this._clearOverlays();
       this._syncHud();
+      audio.syncThemeMusic(this.theme.id, true);
     });
+  }
+
+  private _toggleSound(): void {
+    audio.setEnabled(!audio.enabled);
+    saveSoundEnabled(audio.enabled);
+    this._syncSoundButton();
+  }
+
+  private _syncSoundButton(): void {
+    const hud = document.getElementById('sound-btn');
+    if (!hud) return;
+    hud.setAttribute('aria-label', audio.enabled ? 'Mute sound' : 'Unmute sound');
+    const existing = hud.querySelector('img');
+    const src = assetUrl(buttonPath(audio.enabled ? 'sound_on' : 'sound_off'));
+    if (existing) existing.src = src;
+    else hud.append(spriteImg(buttonPath(audio.enabled ? 'sound_on' : 'sound_off'), '', 'ui-icon'));
   }
 
   private _persist(): void {
@@ -550,10 +590,16 @@ export class App {
         this._syncEnergy(100, true);
       },
       deck: this.deck,
-      questions: QUESTIONS,
+      questions: questionsFor(this.theme.id),
       dangerHoldMs: DANGER_HOLD_MS,
     };
   }
+}
+
+function quizSubject(themeId: string): string {
+  if (themeId === 'sports') return 'Math';
+  if (themeId === 'night') return 'Space';
+  return 'Geography';
 }
 
 function escapeHtml(text: string): string {

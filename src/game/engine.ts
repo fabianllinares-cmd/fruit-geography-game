@@ -1,21 +1,28 @@
 import Matter from 'matter-js';
 import { ChargeMeter, energyFromMerge } from './charge';
-import { collisionSize } from './collision';
+import { collisionSize, type CollisionSize } from './collision';
 import { DangerTracker, DANGER_HOLD_MS } from './danger';
+import { challengeThreshold } from '../questions/progress';
 import { getTheme } from '../themes';
 import { RADII } from '../themes/types';
-import { canMerge, MAX_LEVEL, nextLevel, scoreForMerge } from './scoring';
+import { canMerge, nextLevel, scoreForMerge } from './scoring';
 import { pickDropLevel } from './spawn';
 import type { EngineCallbacks, GameSnapshot, PauseReason, SavedGame } from './types';
 
-const { Engine, World, Bodies, Body, Composite, Events, Query } = Matter;
+const { Engine, World, Bodies, Body, Composite, Events, Query, Sleeping } = Matter;
 
 export const WORLD_WIDTH = 360;
 export const WORLD_HEIGHT = 520;
 export const WALL = 14;
+/** Collision thickness of the floor. Extends below the visible wall so fast bodies cannot tunnel. */
+export const FLOOR_DEPTH = 56;
 export const DROP_Y = 54;
 export const DANGER_Y = 102;
 const DROP_COOLDOWN_MS = 420;
+const PHYSICS_STEP_MS = 1000 / 60;
+const SHAKE_PULSES = 4;
+/** Visible tiers 1–3 are zero-based levels 0, 1 and 2. */
+export const SWEEP_MAX_LEVEL = 2;
 
 export interface MergeEngineOptions {
   width?: number;
@@ -32,7 +39,12 @@ export interface FruitBody extends Matter.Body {
 }
 
 function isFruit(body: Matter.Body): body is FruitBody {
-  return Boolean((body as FruitBody).isFruit);
+  return Boolean((body as FruitBody).isFruit) && body.parent === body;
+}
+
+function fruitRoot(body: Matter.Body): FruitBody | null {
+  const root = body.parent ?? body;
+  return isFruit(root) ? root : null;
 }
 
 export class MergeEngine {
@@ -63,6 +75,8 @@ export class MergeEngine {
   private dropCooldown = 0;
   private themeId = 'classic';
   private on: EngineCallbacks = {};
+  private shakePulses = 0;
+  private collisionBound = false;
 
   constructor(options: MergeEngineOptions = {}) {
     this.width = options.width ?? WORLD_WIDTH;
@@ -96,6 +110,10 @@ export class MergeEngine {
     return this.pauseReasons.size > 0 || this.gameOver;
   }
 
+  get challengeThreshold(): number {
+    return challengeThreshold(this.score, this.highestLevel, this.droppedCount);
+  }
+
   addPause(reason: PauseReason): void {
     this.pauseReasons.add(reason);
   }
@@ -114,8 +132,12 @@ export class MergeEngine {
   }
 
   objectAt(x: number, y: number): FruitBody | null {
-    const hits = Query.point(this.fruits(), { x, y });
-    return hits[0] && isFruit(hits[0]) ? hits[0] : null;
+    const hits = Query.point(Composite.allBodies(this.world), { x, y });
+    for (const hit of hits) {
+      const fruit = fruitRoot(hit);
+      if (fruit) return fruit;
+    }
+    return null;
   }
 
   setDropX(x: number): void {
@@ -156,6 +178,7 @@ export class MergeEngine {
     this.geoCorrect = 0;
     this.geoAsked = 0;
     this.gameOver = false;
+    this.shakePulses = 0;
     this.removePause('gameover');
     this.removePause('question');
     this.canDrop = true;
@@ -166,7 +189,7 @@ export class MergeEngine {
     this.themeId = themeId;
     this._rollQueue();
     this.on.onScore?.(0, 0, 0);
-    this.on.onCharge?.(this.charge.energy, this.charge.ready);
+    this.on.onCharge?.(this.charge.energy, this.charge.isReady(this.challengeThreshold));
     this.on.onQueue?.(this.currentLevel, this.nextLevel);
     this.on.onDanger?.(false, 0);
   }
@@ -176,7 +199,7 @@ export class MergeEngine {
     return {
       score: this.score,
       energy: this.charge.energy,
-      challengeReady: this.charge.ready,
+      challengeReady: this.charge.isReady(this.challengeThreshold),
       currentLevel: this.currentLevel,
       nextLevel: this.nextLevel,
       highestLevel: this.highestLevel,
@@ -233,7 +256,7 @@ export class MergeEngine {
       Body.setAngularVelocity(body, item.angularVelocity);
     }
     this.on.onScore?.(this.score, 0, this.highestLevel);
-    this.on.onCharge?.(this.charge.energy, this.charge.ready);
+    this.on.onCharge?.(this.charge.energy, this.charge.isReady(this.challengeThreshold));
     this.on.onQueue?.(this.currentLevel, this.nextLevel);
   }
 
@@ -248,8 +271,20 @@ export class MergeEngine {
     this.usedThisTick.clear();
     this.pendingMerges = [];
     this.chain = 0;
-    Engine.update(this.engine, dt);
+
+    if (this.shakePulses > 0) {
+      this._shakePulse(0.45 + this.shakePulses * 0.14);
+      this.shakePulses -= 1;
+    }
+
+    let remaining = dt;
+    while (remaining > 0.5) {
+      const step = Math.min(PHYSICS_STEP_MS, remaining);
+      Engine.update(this.engine, step);
+      remaining -= step;
+    }
     this._resolveMerges();
+    this._rescueFallen();
 
     if (this.dropCooldown > 0) {
       this.dropCooldown -= dt;
@@ -275,7 +310,7 @@ export class MergeEngine {
 
   tryConsumeChallenge(): boolean {
     if (this.gameOver) return false;
-    return this.charge.consume();
+    return this.charge.consume(this.challengeThreshold);
   }
 
   recordAnswer(correct: boolean): void {
@@ -284,23 +319,19 @@ export class MergeEngine {
   }
 
   earthquake(): void {
-    for (const fruit of this.fruits()) {
-      Matter.Sleeping.set(fruit, false);
-      const kickX = (this.random() - 0.5) * 14;
-      const kickY = -2 - this.random() * 5;
-      Body.setVelocity(fruit, { x: kickX, y: kickY });
-    }
+    this.shakePulses = SHAKE_PULSES;
+    this._shakePulse(1);
   }
 
   removeSmall(): FruitBody[] {
     const fruits = this.fruits();
     if (!fruits.length) return [];
-    const minLevel = fruits.reduce((min, f) => Math.min(min, f.gameLevel), MAX_LEVEL);
-    const targets = fruits.filter((f) => f.gameLevel === minLevel);
+    const targets = fruits.filter((f) => f.gameLevel <= SWEEP_MAX_LEVEL);
     for (const body of targets) {
       this.on.onRemoved?.(body.gameLevel, body.position.x, body.position.y);
       World.remove(this.world, body);
     }
+    for (const fruit of this.fruits()) Sleeping.set(fruit, false);
     return targets;
   }
 
@@ -310,6 +341,32 @@ export class MergeEngine {
     this.on.onRemoved?.(body.gameLevel, body.position.x, body.position.y);
     World.remove(this.world, body);
     return body;
+  }
+
+  private _shakePulse(scale: number): void {
+    for (const fruit of this.fruits()) {
+      Sleeping.set(fruit, false);
+      const kickX = (this.random() - 0.5) * 44 * scale;
+      const kickY = (-12 - this.random() * 18) * scale;
+      Body.setVelocity(fruit, {
+        x: fruit.velocity.x * 0.15 + kickX,
+        y: fruit.velocity.y * 0.15 + kickY,
+      });
+      Body.setAngularVelocity(fruit, (this.random() - 0.5) * 0.28 * scale);
+    }
+  }
+
+  private _rescueFallen(): void {
+    const limit = this.height + FLOOR_DEPTH;
+    for (const fruit of this.fruits()) {
+      if (fruit.position.y < limit) continue;
+      const radius = this._radius(fruit.gameLevel);
+      Body.setPosition(fruit, {
+        x: Math.max(WALL + radius, Math.min(this.width - WALL - radius, fruit.position.x)),
+        y: this.height - WALL - radius - 2,
+      });
+      Body.setVelocity(fruit, { x: fruit.velocity.x * 0.2, y: 0 });
+    }
   }
 
   private _rollQueue(): void {
@@ -327,16 +384,24 @@ export class MergeEngine {
     return getTheme(this.themeId).objects[level]?.id ?? 'blueberry';
   }
 
-  private _radius(level: number): number {
+  private _levelRadius(level: number): number {
+    const objects = getTheme(this.themeId).objects;
+    if (objects[level]?.radius) return objects[level].radius;
     const idx = Math.max(0, Math.min(RADII.length - 1, level));
-    return collisionSize(this._objectId(level), RADII[idx]).bound;
+    return RADII[idx];
+  }
+
+  private _radius(level: number): number {
+    return collisionSize(this._objectId(level), this._levelRadius(level)).bound;
   }
 
   private _buildBounds(): void {
     const opts = { isStatic: true, restitution: 0.08, friction: 0.85, slop: 0.05 };
-    const floor = Bodies.rectangle(this.width / 2, this.height - WALL / 2, this.width, WALL, opts);
-    const left = Bodies.rectangle(WALL / 2, this.height / 2, WALL, this.height, opts);
-    const right = Bodies.rectangle(this.width - WALL / 2, this.height / 2, WALL, this.height, opts);
+    // Keep the visible top of the floor at height - WALL, but thicken downward.
+    const floorY = this.height - WALL + FLOOR_DEPTH / 2;
+    const floor = Bodies.rectangle(this.width / 2, floorY, this.width + WALL * 2, FLOOR_DEPTH, opts);
+    const left = Bodies.rectangle(WALL / 2, this.height / 2, WALL, this.height + FLOOR_DEPTH, opts);
+    const right = Bodies.rectangle(this.width - WALL / 2, this.height / 2, WALL, this.height + FLOOR_DEPTH, opts);
     floor.label = 'wall';
     left.label = 'wall';
     right.label = 'wall';
@@ -344,23 +409,23 @@ export class MergeEngine {
   }
 
   private _bindPhysics(): void {
+    if (this.collisionBound) return;
+    this.collisionBound = true;
     // Queue merges instead of mutating the world inside the collision callback.
     // Matter.js can miss follow-up contacts if bodies are removed mid-event.
     Events.on(this.engine, 'collisionStart', (evt) => {
       for (const pair of evt.pairs) {
-        const a = pair.bodyA;
-        const b = pair.bodyB;
-        if (isFruit(a) && isFruit(b) && canMerge(a.gameLevel, b.gameLevel)) {
+        const a = fruitRoot(pair.bodyA);
+        const b = fruitRoot(pair.bodyB);
+        if (a && b && a.id !== b.id && canMerge(a.gameLevel, b.gameLevel)) {
           this.pendingMerges.push([a, b]);
         }
       }
     });
   }
 
-  private _makeFruit(level: number, x: number, y: number): FruitBody {
-    const baseRadius = RADII[Math.max(0, Math.min(RADII.length - 1, level))];
-    const size = collisionSize(this._objectId(level), baseRadius);
-    const opts = {
+  private _fruitOptions(level: number) {
+    return {
       restitution: 0.12,
       friction: 0.5,
       frictionStatic: 0.7,
@@ -369,20 +434,45 @@ export class MergeEngine {
       slop: 0.04,
       sleepThreshold: 40,
     };
-    const body = (
-      size.kind === 'circle'
-        ? Bodies.circle(x, y, size.hw, opts)
-        : Bodies.rectangle(x, y, size.hw * 2, size.hh * 2, {
-            ...opts,
-            chamfer: { radius: Math.min(size.hw, size.hh) * 0.22 },
-          })
-    ) as FruitBody;
+  }
+
+  private _makeFruit(level: number, x: number, y: number): FruitBody {
+    const baseRadius = this._levelRadius(level);
+    const size = collisionSize(this._objectId(level), baseRadius);
+    const opts = this._fruitOptions(level);
+    const body = this._createBody(size, x, y, opts, baseRadius);
     body.isFruit = true;
     body.gameLevel = level;
     body.bornAt = this.now();
     body.label = 'fruit';
     this.highestLevel = Math.max(this.highestLevel, level);
     return body;
+  }
+
+  private _createBody(
+    size: CollisionSize,
+    x: number,
+    y: number,
+    opts: ReturnType<MergeEngine['_fruitOptions']>,
+    baseRadius: number,
+  ): FruitBody {
+    if (size.kind === 'circle') {
+      return Bodies.circle(x, y, size.hw, opts) as FruitBody;
+    }
+    if (size.kind === 'compound' && size.parts?.length) {
+      const parts = size.parts.map((part) =>
+        Bodies.circle(x + part.x * baseRadius, y + part.y * baseRadius, part.r * baseRadius, opts),
+      );
+      return Body.create({
+        ...opts,
+        parts,
+      }) as FruitBody;
+    }
+    const chamfer = size.kind === 'capsule' ? Math.min(size.hw, size.hh) : Math.min(size.hw, size.hh) * 0.22;
+    return Bodies.rectangle(x, y, size.hw * 2, size.hh * 2, {
+      ...opts,
+      chamfer: { radius: chamfer },
+    }) as FruitBody;
   }
 
   private _resolveMerges(): void {
@@ -410,7 +500,7 @@ export class MergeEngine {
       this.charge.add(energyFromMerge(result));
       this.on.onMerge?.(result, x, y, this.chain);
       this.on.onScore?.(this.score, gained, result);
-      this.on.onCharge?.(this.charge.energy, this.charge.ready);
+      this.on.onCharge?.(this.charge.energy, this.charge.isReady(this.challengeThreshold));
     }
   }
 }

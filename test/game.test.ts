@@ -97,24 +97,48 @@ describe('geography charge', () => {
 });
 
 describe('power-ups', () => {
-  it('earthquake applies velocities without deleting objects', () => {
+  it('earthquake applies strong velocities without deleting objects', () => {
     const engine = new MergeEngine({ random: () => 0.8 });
     engine.spawn(2, 180, 450);
     engine.spawn(3, 200, 400);
     const before = engine.fruits().length;
     engine.earthquake();
     expect(engine.fruits()).toHaveLength(before);
-    expect(engine.fruits().some((b) => Math.abs(b.velocity.x) + Math.abs(b.velocity.y) > 0.5)).toBe(true);
+    const speeds = engine.fruits().map((b) => Math.hypot(b.velocity.x, b.velocity.y));
+    expect(speeds.some((s) => s > 12)).toBe(true);
   });
 
-  it('remove-small deletes the lowest-level objects on the board', () => {
+  it('shake pulses keep waking the pile across a few frames', () => {
+    const engine = new MergeEngine({ random: () => 0.2 });
+    engine.spawn(4, 180, 450);
+    engine.earthquake();
+    const first = Math.hypot(engine.fruits()[0].velocity.x, engine.fruits()[0].velocity.y);
+    engine.update(16);
+    const second = Math.hypot(engine.fruits()[0].velocity.x, engine.fruits()[0].velocity.y);
+    expect(first).toBeGreaterThan(8);
+    expect(second).toBeGreaterThan(4);
+  });
+
+  it('sweep deletes every object in visible tiers 1, 2 and 3', () => {
     const engine = new MergeEngine();
-    engine.spawn(0, 120, 460);
-    engine.spawn(0, 160, 460);
+    engine.spawn(0, 80, 460);
+    engine.spawn(0, 100, 460);
+    engine.spawn(1, 140, 460);
+    engine.spawn(2, 180, 450);
     engine.spawn(3, 220, 430);
+    engine.spawn(5, 260, 400);
     const removed = engine.removeSmall();
-    expect(removed).toHaveLength(2);
-    expect(engine.snapshot().levels).toEqual([3]);
+    expect(removed).toHaveLength(4);
+    expect(engine.snapshot().levels).toEqual([3, 5]);
+    expect(engine.score).toBe(0);
+  });
+
+  it('counts a Tropical banana as one fruit even with a compound collider', () => {
+    const engine = new MergeEngine({ random: () => 0 });
+    engine.setThemeId('tropical');
+    engine.spawn(6, 180, 430);
+    expect(engine.fruits()).toHaveLength(1);
+    expect(engine.snapshot().bodyCount).toBe(1);
   });
 
   it('target-remove deletes exactly one selected object', () => {
@@ -198,5 +222,16 @@ describe('drops', () => {
     for (let i = 0; i < 80; i++) {
       expect(pickDropLevel(() => i / 80)).toBeLessThanOrEqual(4);
     }
+  });
+});
+
+describe('floor collision', () => {
+  it('does not let a fast fruit fall through the floor', () => {
+    const engine = new MergeEngine({ random: () => 0 });
+    const body = engine.spawn(0, 180, 480);
+    Matter.Body.setVelocity(body, { x: 0, y: 55 });
+    for (let i = 0; i < 45; i++) engine.update(32);
+    expect(engine.fruits()).toHaveLength(1);
+    expect(engine.fruits()[0].position.y).toBeLessThan(engine.height + 8);
   });
 });

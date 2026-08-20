@@ -10,7 +10,11 @@ export class ChargeMeter {
   energy = 0;
 
   get ready(): boolean {
-    return this.energy >= ENERGY_FOR_CHALLENGE;
+    return this.isReady(ENERGY_FOR_CHALLENGE);
+  }
+
+  isReady(threshold: number = ENERGY_FOR_CHALLENGE): boolean {
+    return this.energy >= threshold;
   }
 
   add(amount: number): void {
@@ -25,8 +29,8 @@ export class ChargeMeter {
    * Consume a geography challenge charge.
    * Returns false if a challenge is not available yet.
    */
-  consume(): boolean {
-    if (!this.ready) return false;
+  consume(threshold: number = ENERGY_FOR_CHALLENGE): boolean {
+    if (!this.isReady(threshold)) return false;
     this.energy = 0;
     return true;
   }
