@@ -97,7 +97,7 @@ describe('geography charge', () => {
 });
 
 describe('power-ups', () => {
-  it('earthquake applies strong velocities without deleting objects', () => {
+  it('earthquake applies moderate velocities without deleting objects or launching them', () => {
     const engine = new MergeEngine({ random: () => 0.8 });
     engine.spawn(2, 180, 450);
     engine.spawn(3, 200, 400);
@@ -105,7 +105,8 @@ describe('power-ups', () => {
     engine.earthquake();
     expect(engine.fruits()).toHaveLength(before);
     const speeds = engine.fruits().map((b) => Math.hypot(b.velocity.x, b.velocity.y));
-    expect(speeds.some((s) => s > 12)).toBe(true);
+    expect(speeds.some((s) => s > 3)).toBe(true);
+    expect(engine.fruits().every((b) => b.velocity.y > -12)).toBe(true);
   });
 
   it('shake pulses keep waking the pile across a few frames', () => {
@@ -115,8 +116,8 @@ describe('power-ups', () => {
     const first = Math.hypot(engine.fruits()[0].velocity.x, engine.fruits()[0].velocity.y);
     engine.update(16);
     const second = Math.hypot(engine.fruits()[0].velocity.x, engine.fruits()[0].velocity.y);
-    expect(first).toBeGreaterThan(8);
-    expect(second).toBeGreaterThan(4);
+    expect(first).toBeGreaterThan(3);
+    expect(second).toBeGreaterThan(2);
   });
 
   it('sweep deletes every object in visible tiers 1, 2 and 3', () => {
@@ -158,6 +159,24 @@ describe('danger line', () => {
     expect(danger.update(false, 16)).toBe(false);
     expect(danger.elapsed).toBe(0);
     expect(danger.update(true, DANGER_HOLD_MS)).toBe(true);
+  });
+
+  it('does not warn when a settled object is still well below the danger line', () => {
+    const engine = new MergeEngine({ dangerHoldMs: 400 });
+    const body = engine.spawn(8, 180, 280);
+    Matter.Body.setStatic(body, true);
+    Matter.Body.setVelocity(body, { x: 0, y: 0 });
+    step(engine, 500);
+    expect(engine.danger.inDanger).toBe(false);
+    expect(engine.gameOver).toBe(false);
+  });
+
+  it('ignores a falling object that is only passing the upper region', () => {
+    const engine = new MergeEngine({ dangerHoldMs: 400 });
+    const body = engine.spawn(3, 180, DANGER_Y - 4);
+    Matter.Body.setVelocity(body, { x: 0, y: 8 });
+    step(engine, 48);
+    expect(engine.gameOver).toBe(false);
   });
 
   it('ends the game if a settled object stays above the line', () => {

@@ -29,16 +29,17 @@ describe('collision silhouettes', () => {
     expect(collisionFor('strawberry').fit).toBe('min');
   });
 
-  it('uses elongated capsules for american football and rugby', () => {
+  it('uses an elongated capsule for american football and a diagonal compound for rugby', () => {
     const football = collisionSize('football', RADII[7]);
     const rugby = collisionSize('rugby', RADII[8]);
     expect(football.kind).toBe('capsule');
-    expect(rugby.kind).toBe('capsule');
     expect(football.hw).toBeGreaterThan(football.hh);
+    expect(rugby.kind).toBe('compound');
+    expect(rugby.parts?.length).toBeGreaterThanOrEqual(3);
     expect(rugby.hw).toBeGreaterThan(rugby.hh);
   });
 
-  it('keeps Tropical drawing fit while shrinking sparse fruit colliders', () => {
+  it('keeps Tropical drawing fit while matching opaque fruit mass more closely', () => {
     expect(collisionFor('raspberry').fit).toBe('min');
     expect(collisionFor('starfruit').fit).toBe('min');
     expect(collisionFor('banana').fit).toBe('min');
@@ -48,20 +49,29 @@ describe('collision silhouettes', () => {
 
     const raspberry = collisionSize('raspberry', RADII[0]);
     expect(raspberry.kind).toBe('circle');
-    expect(raspberry.bound).toBeLessThan(RADII[0] * 0.75);
+    expect(raspberry.bound).toBeGreaterThan(RADII[0] * 0.8);
+    expect(raspberry.bound).toBeLessThan(RADII[0] * 0.95);
 
     const starfruit = collisionSize('starfruit', RADII[2]);
     expect(starfruit.kind).toBe('circle');
-    expect(starfruit.bound).toBeLessThan(RADII[2] * 0.85);
+    expect(starfruit.bound).toBeGreaterThan(RADII[2] * 0.82);
+    expect(starfruit.bound).toBeLessThan(RADII[2] * 0.98);
 
     const banana = collisionSize('banana', RADII[6]);
     expect(banana.kind).toBe('compound');
-    expect(banana.parts?.length).toBeGreaterThanOrEqual(3);
-    expect(banana.hw).toBeLessThan(RADII[6] * 1.2);
+    expect(banana.parts?.length).toBeGreaterThanOrEqual(4);
+    expect(banana.hw).toBeLessThan(RADII[6] * 1.25);
+
+    const coconut = collisionSize('coconut', RADII[7]);
+    expect(coconut.kind).toBe('compound');
+    expect(coconut.parts?.length).toBe(2);
 
     const papaya = collisionSize('papaya', RADII[8]);
-    expect(papaya.kind).toBe('capsule');
+    expect(papaya.kind).toBe('compound');
     expect(papaya.hw).toBeGreaterThan(papaya.hh);
+
+    const dragonfruit = collisionSize('dragonfruit', RADII[4]);
+    expect(dragonfruit.kind).toBe('compound');
   });
 
   it('does not change Classic fruit radii', () => {
@@ -81,6 +91,13 @@ describe('collision silhouettes', () => {
     expect(sportsTheme.objects[5].radius).toBeGreaterThan(sportsTheme.objects[4].radius + 6);
     expect(sportsTheme.objects[9].radius).toBeGreaterThan(sportsTheme.objects[6].radius);
     expect(sportsTheme.objects[10].radius).toBeGreaterThan(sportsTheme.objects[9].radius);
+    expect(drinksTheme.objects[3].id).toBe('champagne');
+    expect(drinksTheme.objects[3].radius).toBe(29);
+    expect(drinksTheme.objects[3].radius).toBeGreaterThan(drinksTheme.objects[2].radius);
+    expect(drinksTheme.objects[3].radius).toBeLessThan(drinksTheme.objects[4].radius);
+    const champagne = collisionSize('champagne', drinksTheme.objects[3].radius);
+    expect(champagne.kind).toBe('rect');
+    expect(champagne.hw).toBeLessThan(champagne.hh * 0.4);
     for (let i = 1; i < drinksTheme.objects.length; i++) {
       expect(drinksTheme.objects[i].radius).toBeGreaterThan(drinksTheme.objects[i - 1].radius);
     }

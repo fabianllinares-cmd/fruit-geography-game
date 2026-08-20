@@ -20,7 +20,17 @@ export const DROP_Y = 54;
 export const DANGER_Y = 102;
 const DROP_COOLDOWN_MS = 420;
 const PHYSICS_STEP_MS = 1000 / 60;
-const SHAKE_PULSES = 4;
+/** Several gentle pulses; horizontal agitation is stronger than lift. */
+export const SHAKE_PULSES = 5;
+export const SHAKE_KICK_X = 20;
+export const SHAKE_KICK_Y_BASE = 2.6;
+export const SHAKE_KICK_Y_RANGE = 4.0;
+export const SHAKE_SPIN = 0.18;
+export const SHAKE_START_SCALE = 0.62;
+const SETTLED_SPEED = 0.5;
+const SETTLED_SPIN = 0.1;
+/** Show the danger warning when a settled silhouette is this close to the line. */
+export const DANGER_APPROACH_PX = 12;
 /** Visible tiers 1–3 are zero-based levels 0, 1 and 2. */
 export const SWEEP_MAX_LEVEL = 2;
 
@@ -273,7 +283,7 @@ export class MergeEngine {
     this.chain = 0;
 
     if (this.shakePulses > 0) {
-      this._shakePulse(0.45 + this.shakePulses * 0.14);
+      this._shakePulse(0.28 + this.shakePulses * 0.07);
       this.shakePulses -= 1;
     }
 
@@ -291,12 +301,11 @@ export class MergeEngine {
       if (this.dropCooldown <= 0) this.canDrop = true;
     }
 
-    const occupied = this.fruits().some((fruit) => {
-      const top = fruit.position.y - this._radius(fruit.gameLevel);
-      const settled = Math.abs(fruit.velocity.y) < 0.45 && Math.abs(fruit.velocity.x) < 0.45;
-      return top < DANGER_Y && settled;
-    });
-    const over = this.danger.update(occupied, dt);
+    const occupying = this.fruits().some((fruit) => this._isSettled(fruit) && this._silhouetteTop(fruit) < DANGER_Y);
+    const warning = this.fruits().some(
+      (fruit) => this._isSettled(fruit) && this._silhouetteTop(fruit) < DANGER_Y + DANGER_APPROACH_PX,
+    );
+    const over = this.danger.update(occupying, dt, warning);
     this.on.onDanger?.(this.danger.inDanger, this.danger.elapsed);
     if (over) this.endGame();
   }
@@ -320,7 +329,7 @@ export class MergeEngine {
 
   earthquake(): void {
     this.shakePulses = SHAKE_PULSES;
-    this._shakePulse(1);
+    this._shakePulse(SHAKE_START_SCALE);
   }
 
   removeSmall(): FruitBody[] {
@@ -343,16 +352,27 @@ export class MergeEngine {
     return body;
   }
 
+  private _isSettled(fruit: FruitBody): boolean {
+    if (fruit.isSleeping) return true;
+    const speed = Math.hypot(fruit.velocity.x, fruit.velocity.y);
+    return speed < SETTLED_SPEED && Math.abs(fruit.angularVelocity) < SETTLED_SPIN;
+  }
+
+  /** Top of the oriented collision silhouette, not the body centre. */
+  private _silhouetteTop(fruit: FruitBody): number {
+    return fruit.bounds.min.y;
+  }
+
   private _shakePulse(scale: number): void {
     for (const fruit of this.fruits()) {
       Sleeping.set(fruit, false);
-      const kickX = (this.random() - 0.5) * 44 * scale;
-      const kickY = (-12 - this.random() * 18) * scale;
+      const kickX = (this.random() - 0.5) * SHAKE_KICK_X * scale;
+      const kickY = -(SHAKE_KICK_Y_BASE + this.random() * SHAKE_KICK_Y_RANGE) * scale;
       Body.setVelocity(fruit, {
-        x: fruit.velocity.x * 0.15 + kickX,
-        y: fruit.velocity.y * 0.15 + kickY,
+        x: fruit.velocity.x * 0.35 + kickX,
+        y: fruit.velocity.y * 0.35 + kickY,
       });
-      Body.setAngularVelocity(fruit, (this.random() - 0.5) * 0.28 * scale);
+      Body.setAngularVelocity(fruit, (this.random() - 0.5) * SHAKE_SPIN * scale);
     }
   }
 

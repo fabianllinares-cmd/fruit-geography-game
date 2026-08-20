@@ -44,7 +44,7 @@ export const drinksTheme: Theme = {
     {
       id: 'champagne',
       name: 'Champagne flute',
-      radius: 26,
+      radius: 29,
       visual: { fill: '#fde68a', stroke: '#e8c07a', highlight: '#ffffff', style: 'drink' },
     },
     {

@@ -50,13 +50,16 @@ body {
   flex-direction: column;
   padding: calc(8px + var(--safe-top)) 10px calc(10px + var(--safe-bottom));
   gap: 8px;
+  min-width: 0;
 }
 
 .hud {
   display: grid;
-  grid-template-columns: auto 1fr auto auto auto;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
 }
 
 .theme-pill,
@@ -78,30 +81,50 @@ body {
   font-weight: 700;
   font-size: 13px;
   box-shadow: 0 6px 16px var(--shadow);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.theme-pill #theme-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .icon-btn {
   width: 40px;
   height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   font-size: 18px;
   display: grid;
   place-items: center;
   padding: 0;
   overflow: hidden;
+  flex: 0 0 auto;
+}
+
+.hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
 }
 
 .scores {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .stat {
   background: var(--panel);
   border: 1px solid var(--panel-border);
   border-radius: 12px;
-  padding: 4px 10px;
-  min-width: 64px;
+  padding: 4px 8px;
+  min-width: 0;
+  flex: 1 1 0;
   text-align: center;
 }
 
@@ -122,7 +145,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 42px;
+  min-width: 36px;
+  flex: 0 0 auto;
 }
 
 .highest-label {
@@ -659,6 +683,25 @@ html[data-theme='night'] .resume-sprite,
 .sound-btn {
   width: 44px;
   height: 44px;
+}
+
+@media (max-width: 380px) {
+  .hud {
+    gap: 4px;
+  }
+
+  .theme-pill {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .stat {
+    padding: 4px 6px;
+  }
+
+  .stat b {
+    font-size: 18px;
+  }
 }
 
 @media (min-width: 500px) {
