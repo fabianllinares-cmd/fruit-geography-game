@@ -20,12 +20,12 @@ export const DROP_Y = 54;
 export const DANGER_Y = 102;
 const DROP_COOLDOWN_MS = 420;
 const PHYSICS_STEP_MS = 1000 / 60;
-/** Several gentle pulses; horizontal agitation is stronger than lift. */
+/** Several lateral pulses; horizontal agitation is stronger than lift. */
 export const SHAKE_PULSES = 5;
-export const SHAKE_KICK_X = 26;
-export const SHAKE_KICK_Y_BASE = 3.4;
-export const SHAKE_KICK_Y_RANGE = 5.2;
-export const SHAKE_SPIN = 0.2;
+export const SHAKE_KICK_X = 37;
+export const SHAKE_KICK_Y_BASE = 3.9;
+export const SHAKE_KICK_Y_RANGE = 6.0;
+export const SHAKE_SPIN = 0.26;
 export const SHAKE_START_SCALE = 0.7;
 export const SHAKE_MAX_UP = 14;
 const SETTLED_SPEED = 0.5;
@@ -87,6 +87,7 @@ export class MergeEngine {
   private themeId = 'classic';
   private on: EngineCallbacks = {};
   private shakePulses = 0;
+  private shakeDir = 1;
   private collisionBound = false;
 
   constructor(options: MergeEngineOptions = {}) {
@@ -190,6 +191,7 @@ export class MergeEngine {
     this.geoAsked = 0;
     this.gameOver = false;
     this.shakePulses = 0;
+    this.shakeDir = 1;
     this.removePause('gameover');
     this.removePause('question');
     this.canDrop = true;
@@ -331,6 +333,7 @@ export class MergeEngine {
 
   earthquake(): void {
     this.shakePulses = SHAKE_PULSES;
+    this.shakeDir = 1;
     this._shakePulse(SHAKE_START_SCALE);
   }
 
@@ -366,9 +369,11 @@ export class MergeEngine {
   }
 
   private _shakePulse(scale: number): void {
+    const dir = this.shakeDir;
+    this.shakeDir *= -1;
     for (const fruit of this.fruits()) {
       Sleeping.set(fruit, false);
-      const kickX = (this.random() - 0.5) * SHAKE_KICK_X * scale;
+      const kickX = dir * Math.abs(this.random() - 0.5) * SHAKE_KICK_X * scale;
       const kickY = -(SHAKE_KICK_Y_BASE + this.random() * SHAKE_KICK_Y_RANGE) * scale;
       Body.setVelocity(fruit, {
         x: fruit.velocity.x * 0.35 + kickX,
