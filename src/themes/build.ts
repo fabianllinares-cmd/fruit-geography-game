@@ -8,6 +8,8 @@ export function buildObjects(
     id: string;
     name: string;
     visual: Omit<VisualSpec, 'sprite'>;
+    /** Optional display+physics radius. Defaults to the shared RADII table. */
+    radius?: number;
   }>,
 ): ObjectDef[] {
   const mapped = ASSET_MANIFEST.themes[themeId];
@@ -24,7 +26,7 @@ export function buildObjects(
     return {
       id: entry.id,
       name: entry.name,
-      radius: RADII[index],
+      radius: entry.radius ?? RADII[index],
       score: SCORES[index],
       mergeTarget: index < entries.length - 1 ? entries[index + 1].id : null,
       visual: { ...entry.visual, sprite: row.file },

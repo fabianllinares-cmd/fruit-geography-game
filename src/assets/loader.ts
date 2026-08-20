@@ -1,11 +1,19 @@
 import { allAssetPaths, assetUrl } from './catalog';
-import { keyBlackMatte, visibleBoundsFromRgba, type VisibleBounds } from './visible';
+import { keyBlackMatte, visibleBoundsFromRgba, NIGHT_GLOW_FILTER, type VisibleBounds } from './visible';
 
 const cache = new Map<string, HTMLImageElement>();
 const boundsCache = new Map<string, VisibleBounds | null>();
 const displayCache = new Map<string, HTMLCanvasElement>();
 const displayUrlCache = new Map<string, string>();
+const nightGlowCache = new Map<string, NightGlowSprite>();
 let preloadPromise: Promise<void> | null = null;
+
+export interface NightGlowSprite {
+  canvas: HTMLCanvasElement;
+  pad: number;
+  w: number;
+  h: number;
+}
 
 export function getSprite(relPath: string): HTMLImageElement | null {
   const cached = cache.get(relPath);
@@ -75,7 +83,48 @@ function prepareSprite(relPath: string, img: HTMLImageElement): VisibleBounds | 
     // Tainted canvas: keep the original pixels and full-frame bounds.
   }
   boundsCache.set(relPath, bounds);
+  if (bounds && usesBlackMatteKey(relPath)) {
+    bakeNightGlow(relPath, displayCache.get(relPath) ?? img, bounds);
+  }
   return bounds;
+}
+
+/** Pre-render the Night neon glow once per fruit sprite so gameplay never uses ctx.filter. */
+export function getNightSprite(relPath: string): NightGlowSprite | null {
+  const cached = nightGlowCache.get(relPath);
+  if (cached) return cached;
+  const bounds = boundsCache.get(relPath);
+  const src = displayCache.get(relPath) ?? getSprite(relPath);
+  if (!bounds || !src) return null;
+  if ('complete' in src && src instanceof HTMLImageElement && (!src.complete || src.naturalWidth < 1)) {
+    return null;
+  }
+  return bakeNightGlow(relPath, src, bounds);
+}
+
+function bakeNightGlow(
+  relPath: string,
+  src: CanvasImageSource,
+  bounds: VisibleBounds,
+): NightGlowSprite | null {
+  if (typeof document === 'undefined') return null;
+  const pad = 14;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, bounds.w + pad * 2);
+  canvas.height = Math.max(1, bounds.h + pad * 2);
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  try {
+    ctx.filter = NIGHT_GLOW_FILTER;
+    ctx.drawImage(src, bounds.x, bounds.y, bounds.w, bounds.h, pad, pad, bounds.w, bounds.h);
+    ctx.filter = 'none';
+  } catch {
+    ctx.filter = 'none';
+    ctx.drawImage(src, bounds.x, bounds.y, bounds.w, bounds.h, pad, pad, bounds.w, bounds.h);
+  }
+  const sprite: NightGlowSprite = { canvas, pad, w: bounds.w, h: bounds.h };
+  nightGlowCache.set(relPath, sprite);
+  return sprite;
 }
 
 export function preloadAssets(): Promise<void> {

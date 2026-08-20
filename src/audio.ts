@@ -1,9 +1,19 @@
+import { assetUrl } from './assets/catalog';
+
+const TROPICAL_MUSIC_SRC = 'assets/audio/bonsai-master.mp3';
+const MUSIC_VOLUME = 0.32;
+
 export class AudioBus {
   enabled = true;
   private ctx: AudioContext | null = null;
+  private music: HTMLAudioElement | null = null;
+  private musicTheme: string | null = null;
+  private wantTropical = false;
 
   setEnabled(on: boolean): void {
     this.enabled = on;
+    if (!on) this.pauseMusic();
+    else if (this.wantTropical) this.playTropicalMusic();
   }
 
   private ensure(): AudioContext | null {
@@ -65,6 +75,51 @@ export class AudioBus {
     } catch {
       /* ignore */
     }
+  }
+
+  /** Start or resume the single Tropical gameplay loop. Call from a user gesture. */
+  playTropicalMusic(restart = false): void {
+    this.wantTropical = true;
+    if (!this.enabled || typeof Audio === 'undefined') return;
+    const el = this._musicEl();
+    this.musicTheme = 'tropical';
+    if (restart) el.currentTime = 0;
+    if (el.paused || restart) {
+      void el.play().catch(() => {
+        /* autoplay may still be blocked; a later gesture retries */
+      });
+    }
+  }
+
+  stopMusic(): void {
+    this.wantTropical = false;
+    this.musicTheme = null;
+    if (!this.music) return;
+    this.music.pause();
+    this.music.currentTime = 0;
+  }
+
+  pauseMusic(): void {
+    this.music?.pause();
+  }
+
+  resumeMusicIfNeeded(): void {
+    if (this.wantTropical && this.enabled) this.playTropicalMusic(false);
+  }
+
+  syncThemeMusic(themeId: string, playing: boolean, restart = false): void {
+    if (themeId === 'tropical' && playing) this.playTropicalMusic(restart);
+    else this.stopMusic();
+  }
+
+  private _musicEl(): HTMLAudioElement {
+    if (this.music) return this.music;
+    const el = new Audio(assetUrl(TROPICAL_MUSIC_SRC));
+    el.loop = true;
+    el.preload = 'auto';
+    el.volume = MUSIC_VOLUME;
+    this.music = el;
+    return el;
   }
 }
 

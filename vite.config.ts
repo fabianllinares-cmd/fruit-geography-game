@@ -8,7 +8,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false,
-      includeAssets: ['icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'],
+      includeAssets: ['icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'assets/audio/bonsai-master.mp3'],
       manifest: {
         name: 'Fruit Geography Game',
         short_name: 'Fruit Geo',
@@ -31,7 +31,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff2,mp3}'],
         navigateFallback: 'index.html',
         // V3 theme backgrounds are original-resolution PNGs (largest ~3.02 MiB).
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,

@@ -46,13 +46,15 @@ describe('production asset pack', () => {
   });
 
   it('keeps theme object ids aligned with the manifest and existing physics radii', () => {
+    const sharedRadii = new Set(['classic', 'night', 'tropical']);
     for (const theme of THEMES) {
       const rows = ASSET_MANIFEST.themes[theme.id as (typeof THEME_IDS)[number]];
       expect(theme.objects).toHaveLength(11);
       theme.objects.forEach((object, index) => {
         expect(object.id).toBe(rows[index].id);
         expect(object.visual.sprite).toBe(rows[index].file);
-        expect(object.radius).toBe(RADII[index]);
+        if (sharedRadii.has(theme.id)) expect(object.radius).toBe(RADII[index]);
+        if (index > 0) expect(object.radius).toBeGreaterThan(theme.objects[index - 1].radius);
       });
     }
   });
@@ -98,6 +100,10 @@ describe('production asset pack', () => {
       expect(tropical[i].file.startsWith('assets/images/tropical/')).toBe(true);
       expect(CANONICAL_FILES.includes(tropical[i].file)).toBe(false);
     }
+  });
+
+  it('includes Tropical gameplay music at a GitHub Pages-safe path', () => {
+    expect(existsSync(publicFile('assets/audio/bonsai-master.mp3'))).toBe(true);
   });
 
   it('removes superseded theme sprite files', () => {
