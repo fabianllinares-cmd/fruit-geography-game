@@ -24,7 +24,7 @@ import {
   saveLastTheme,
   saveSoundEnabled,
 } from '../persistence';
-import { applyThemeVars, getTheme, THEMES, type Theme } from '../themes';
+import { applyThemeVars, getTheme, themeLogoObject, THEMES, type Theme } from '../themes';
 import type { PowerUpId } from '../game/types';
 
 const POWERUPS: Array<{ id: PowerUpId; effect: 'globe' | 'bubbles' | 'target'; name: string; hint: string }> = [
@@ -265,7 +265,8 @@ export class App {
   }
 
   private _syncHud(): void {
-    setSprite(document.getElementById('theme-emoji'), this.theme.objects[0].visual.sprite, this.theme.shortName);
+    const logo = themeLogoObject(this.theme);
+    setSprite(document.getElementById('theme-emoji'), logo.visual.sprite, this.theme.shortName);
     document.getElementById('theme-name')!.textContent = this.theme.shortName;
     document.getElementById('score')!.textContent = String(this.engine.score);
     document.getElementById('best')!.textContent = String(getBest(this.theme.id));
@@ -337,7 +338,8 @@ export class App {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'theme-card';
-      const preview = spriteImg(theme.objects[0].visual.sprite, theme.objects[0].name, 'te');
+      const logo = themeLogoObject(theme);
+      const preview = spriteImg(logo.visual.sprite, logo.name, 'te');
       if (theme.id === 'night') preview.classList.add('night-glow');
       const slot = document.createElement('span');
       slot.className = 'sprite-slot te-slot';
@@ -384,7 +386,7 @@ export class App {
     const theme = getTheme(themeId);
     const overlay = this._card(
       `<h2>Welcome back</h2>
-       <p class="resume-line"><img class="sprite resume-sprite" alt="" src="${assetUrl(theme.objects[0].visual.sprite)}"> Resume ${theme.name} at ${score} points?</p>
+       <p class="resume-line"><img class="sprite resume-sprite" alt="" src="${assetUrl(themeLogoObject(theme).visual.sprite)}"> Resume ${theme.name} at ${score} points?</p>
        <div class="btn-row">
          <button type="button" class="btn btn-primary btn-with-icon" data-act="continue"><img class="ui-icon" alt="" src="${assetUrl(buttonPath('play'))}"> Continue game</button>
          <button type="button" class="btn btn-ghost" data-act="new">New game</button>
@@ -569,6 +571,7 @@ export class App {
       engine: this.engine,
       theme: () => this.theme,
       selectTheme: (id: string) => this._selectTheme(getTheme(id), true),
+      syncHud: () => this._syncHud(),
       requestPower: (id: PowerUpId) => this._requestPower(id),
       fillEnergy: () => {
         this.engine.charge.set(100);

@@ -106,7 +106,7 @@ describe('collision silhouettes', () => {
     expect(sportsTheme.objects[9].radius).toBeGreaterThan(sportsTheme.objects[6].radius);
     expect(sportsTheme.objects[10].radius).toBeGreaterThan(sportsTheme.objects[9].radius);
     expect(drinksTheme.objects[3].id).toBe('champagne');
-    expect(drinksTheme.objects[3].radius).toBe(29);
+    expect(drinksTheme.objects[3].radius).toBeCloseTo(29 * 1.2);
     expect(drinksTheme.objects[3].radius).toBeGreaterThan(drinksTheme.objects[2].radius);
     expect(drinksTheme.objects[3].radius).toBeLessThan(drinksTheme.objects[4].radius);
     const champagne = collisionSize('champagne', drinksTheme.objects[3].radius);
@@ -115,6 +115,19 @@ describe('collision silhouettes', () => {
     for (let i = 1; i < drinksTheme.objects.length; i++) {
       expect(drinksTheme.objects[i].radius).toBeGreaterThan(drinksTheme.objects[i - 1].radius);
     }
+  });
+
+  it('scales every Drinks collider with the 20% display-radius increase', () => {
+    const previous = [14, 16, 21, 29, 32, 38, 46, 54, 63, 73, 86];
+    drinksTheme.objects.forEach((object, index) => {
+      expect(object.radius).toBeCloseTo(previous[index] * 1.2);
+      const before = collisionSize(object.id, previous[index]);
+      const after = collisionSize(object.id, object.radius);
+      expect(after.kind).toBe(before.kind);
+      expect(after.hw / before.hw).toBeCloseTo(1.2);
+      expect(after.hh / before.hh).toBeCloseTo(1.2);
+      expect(after.bound / before.bound).toBeCloseTo(1.2);
+    });
   });
 
   it('uses a tall trophy collider rather than a near-square envelope', () => {

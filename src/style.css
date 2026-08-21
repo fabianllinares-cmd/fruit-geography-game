@@ -55,7 +55,7 @@ body {
 
 .hud {
   display: grid;
-  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) 40px 40px;
   align-items: center;
   gap: 6px;
   min-width: 0;
@@ -141,8 +141,11 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 40px;
+  width: 40px;
+  min-width: 0;
+  max-width: 40px;
   flex: 0 0 auto;
+  overflow: visible;
 }
 
 .highest-label {
@@ -155,6 +158,10 @@ body {
 #highest-emoji {
   width: 32px;
   height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  max-width: 32px;
+  max-height: 32px;
 }
 
 .next-row {
@@ -163,6 +170,8 @@ body {
   justify-content: space-between;
   gap: 8px;
   flex: 0 0 auto;
+  min-width: 0;
+  width: 100%;
 }
 
 .next-main,
@@ -175,10 +184,16 @@ body {
   border-radius: 16px;
   padding: 8px 12px;
   overflow: visible;
+  min-width: 0;
+}
+
+.next-main {
+  flex: 1 1 auto;
 }
 
 .next-after {
   padding: 8px 10px;
+  flex: 0 0 auto;
 }
 
 .next-label {
@@ -192,16 +207,28 @@ body {
 .next-emoji {
   width: 34px;
   height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  max-width: 34px;
+  max-height: 34px;
 }
 
 .then-emoji {
   width: 26px;
   height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  max-width: 26px;
+  max-height: 26px;
 }
 
 .next-name {
   font-weight: 700;
   font-size: 14px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stage {
@@ -458,13 +485,15 @@ body {
 .theme-card .te-slot {
   width: 42px;
   height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  position: relative;
+  overflow: visible;
 }
 
 .theme-card .te {
-  width: 100%;
-  height: 100%;
   object-fit: contain;
-  display: block;
+  object-position: center;
 }
 
 .theme-card b {
@@ -557,11 +586,12 @@ body {
 }
 
 .sprite-slot {
-  display: inline-grid;
+  display: grid;
   place-items: center;
   flex-shrink: 0;
   overflow: visible;
   position: relative;
+  contain: size layout;
 }
 
 .sprite,
@@ -575,29 +605,20 @@ body {
 }
 
 .sprite-slot img {
-  width: 92%;
-  height: 92%;
-  max-width: 92%;
-  max-height: 92%;
-}
-
-.sprite-slot img.alpha-fit {
-  /* Enlarge by the PNG-padding ratio so clip-path leftover fills the slot
-     without a transform that overflow:hidden would crop. */
-  width: calc(100% * var(--trim-scale, 1));
-  height: calc(100% * var(--trim-scale, 1));
-  max-width: none;
-  max-height: none;
-  clip-path: inset(var(--trim-top, 0%) var(--trim-right, 0%) var(--trim-bottom, 0%) var(--trim-left, 0%));
-  transform: none;
-}
-
-img.alpha-fit {
-  clip-path: inset(var(--trim-top, 0%) var(--trim-right, 0%) var(--trim-bottom, 0%) var(--trim-left, 0%));
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: auto;
+  height: auto;
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  object-position: center;
 }
 
 /* Night identity is a render-time silhouette glow, not duplicate PNGs.
-   Skip the tiniest HUD slots (theme pill, Then) where the rim muddies. */
+   Theme logo (Gooseberry) uses the same treatment; Then stays ungilded. */
+html[data-theme='night'] #theme-emoji img,
 html[data-theme='night'] #now-emoji img,
 html[data-theme='night'] #highest-emoji img,
 html[data-theme='night'] .highest-stat img,
@@ -618,6 +639,10 @@ html[data-theme='night'] .resume-sprite,
 #theme-emoji {
   width: 22px;
   height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+  max-width: 22px;
+  max-height: 22px;
 }
 
 .ui-icon {
@@ -676,11 +701,17 @@ html[data-theme='night'] .resume-sprite,
 .resume-sprite {
   width: 36px;
   height: 36px;
+  max-width: 36px;
+  max-height: 36px;
+  object-fit: contain;
 }
 
 .highest-stat img {
   width: 28px;
   height: 28px;
+  max-width: 28px;
+  max-height: 28px;
+  object-fit: contain;
 }
 
 .btn-with-icon {

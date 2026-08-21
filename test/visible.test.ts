@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   NIGHT_GLOW_FILTER,
+  containPreviewRect,
   fitDestRect,
   keyBlackMatte,
   opaqueBoundsFromRgba,
+  PREVIEW_SAFETY,
   trimInsets,
   visibleBoundsFromRgba,
 } from '../src/assets/visible';
@@ -90,5 +92,33 @@ describe('visible sprite bounds', () => {
     const opaque = opaqueBoundsFromRgba(data, width, height);
     expect(visible).toEqual({ x: 0, y: 3, w: 8, h: 5 });
     expect(opaque).toEqual({ x: 3, y: 3, w: 2, h: 2 });
+  });
+
+  it('contains tall, wide and round previews in each slot without using gameplay radius', () => {
+    expect(PREVIEW_SAFETY).toBeGreaterThanOrEqual(0.88);
+    expect(PREVIEW_SAFETY).toBeLessThanOrEqual(0.93);
+
+    const champagne = containPreviewRect(32, 32, 80, 400);
+    expect(champagne.h).toBeCloseTo(32 * PREVIEW_SAFETY);
+    expect(champagne.w).toBeCloseTo((80 / 400) * 32 * PREVIEW_SAFETY);
+    expect(champagne.w).toBeLessThan(champagne.h);
+    expect(champagne.x + champagne.w).toBeLessThanOrEqual(32);
+    expect(champagne.y + champagne.h).toBeLessThanOrEqual(32);
+
+    const football = containPreviewRect(34, 34, 400, 180);
+    expect(football.w).toBeCloseTo(34 * PREVIEW_SAFETY);
+    expect(football.h).toBeCloseTo((180 / 400) * 34 * PREVIEW_SAFETY);
+    expect(football.h).toBeLessThan(football.w);
+
+    const round = containPreviewRect(26, 26, 100, 100);
+    expect(round.w).toBeCloseTo(26 * PREVIEW_SAFETY);
+    expect(round.h).toBeCloseTo(26 * PREVIEW_SAFETY);
+
+    const top = containPreviewRect(32, 32, 90, 420);
+    const next = containPreviewRect(34, 34, 90, 420);
+    const then = containPreviewRect(26, 26, 90, 420);
+    expect(next.h).toBeGreaterThan(top.h);
+    expect(then.h).toBeLessThan(top.h);
+    expect(then.w).toBeLessThan(next.w);
   });
 });
