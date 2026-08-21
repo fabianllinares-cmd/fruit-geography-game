@@ -571,6 +571,7 @@ export class App {
       engine: this.engine,
       theme: () => this.theme,
       selectTheme: (id: string) => this._selectTheme(getTheme(id), true),
+      syncHud: () => this._syncHud(),
       requestPower: (id: PowerUpId) => this._requestPower(id),
       fillEnergy: () => {
         this.engine.charge.set(100);
