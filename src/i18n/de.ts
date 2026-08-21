@@ -28,7 +28,7 @@ export const de: Messages = {
   'hud.menu': 'Menü',
   'hud.highestObject': 'Höchstes Objekt',
   'hud.challengeReady': 'Quiz bereit!',
-  'hud.mergesCharge': 'Merges laden ein Quiz',
+  'hud.mergesCharge': 'Fusionen laden ein Quiz',
 
   'powerup.shake': 'Rütteln',
   'powerup.shakeHint': 'Stapel aufrütteln',
