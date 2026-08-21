@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getBest, loadGame, saveBestScore, saveGame } from '../src/persistence';
-import { getTheme, THEMES } from '../src/themes';
+import { getTheme, THEME_LOGO_OBJECT_ID, themeLogoObject, THEMES } from '../src/themes';
 import { classicTheme } from '../src/themes/classic';
 import { drinksTheme } from '../src/themes/drinks';
 import { nightTheme } from '../src/themes/night';
@@ -86,6 +86,40 @@ describe('themes', () => {
     expect(drinksTheme.objects[10].name).toBe('Champagne bottle');
     expect(getTheme('sports').id).toBe('sports');
     expect(getTheme('missing').id).toBe('classic');
+  });
+
+  it('maps each theme logo to the approved production sprite', () => {
+    expect(themeLogoObject(classicTheme)).toMatchObject({
+      id: 'apple',
+      name: 'Apple',
+      visual: { sprite: 'assets/images/fruits/apple.png' },
+    });
+    expect(themeLogoObject(nightTheme)).toMatchObject({
+      id: 'gooseberry',
+      name: 'Gooseberry',
+      visual: { sprite: 'assets/images/fruits/gooseberry.png' },
+    });
+    expect(themeLogoObject(tropicalTheme).id).toBe('passionfruit');
+    expect(themeLogoObject(tropicalTheme).visual.sprite).toBe(
+      'assets/images/tropical/tropical_04_passionfruit.png',
+    );
+    expect(themeLogoObject(sportsTheme)).toMatchObject({
+      id: 'soccer',
+      name: 'Soccer ball',
+      visual: { sprite: 'assets/images/sports/sports_07_soccer.png' },
+    });
+    expect(themeLogoObject(drinksTheme)).toMatchObject({
+      id: 'martini',
+      name: 'Martini glass',
+      visual: { sprite: 'assets/images/drinks/drinks_07_martini.png' },
+    });
+    expect(THEME_LOGO_OBJECT_ID).toEqual({
+      classic: 'apple',
+      night: 'gooseberry',
+      tropical: 'passionfruit',
+      sports: 'soccer',
+      drinks: 'martini',
+    });
   });
 });
 

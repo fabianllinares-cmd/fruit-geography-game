@@ -1,5 +1,5 @@
 import { assetUrl, backgroundPath, type ThemeId } from '../assets/catalog';
-import type { Theme } from './types';
+import type { ObjectDef, Theme } from './types';
 
 export type { Theme, ObjectDef, VisualSpec } from './types';
 export { classicTheme } from './classic';
@@ -18,6 +18,20 @@ export const THEMES: Theme[] = [classicTheme, nightTheme, tropicalTheme, sportsT
 
 export function getTheme(id: string | null | undefined): Theme {
   return THEMES.find((theme) => theme.id === id) ?? classicTheme;
+}
+
+/** Production sprite used as the small theme logo in the HUD and theme picker. */
+export const THEME_LOGO_OBJECT_ID: Record<ThemeId, string> = {
+  classic: 'apple',
+  night: 'gooseberry',
+  tropical: 'passionfruit',
+  sports: 'soccer',
+  drinks: 'martini',
+};
+
+export function themeLogoObject(theme: Theme): ObjectDef {
+  const id = THEME_LOGO_OBJECT_ID[theme.id as ThemeId];
+  return theme.objects.find((object) => object.id === id) ?? theme.objects[0];
 }
 
 export function applyThemeVars(theme: Theme, root: HTMLElement = document.documentElement): void {

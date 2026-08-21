@@ -1,6 +1,6 @@
 import { assetUrl } from './catalog';
-import { getDisplayUrl, getHudUrl, rememberVisibleBounds } from './loader';
-import { trimInsets } from './visible';
+import { getDisplayUrl, getHudUrl, getOpaqueBounds, rememberVisibleBounds } from './loader';
+import { containPreviewRect } from './visible';
 
 export function spriteImg(relPath: string, alt: string, className = 'sprite'): HTMLImageElement {
   const img = document.createElement('img');
@@ -23,6 +23,8 @@ export function setSprite(el: HTMLElement | null, relPath: string, alt: string, 
     return;
   }
   el.replaceChildren(spriteImg(relPath, alt, className));
+  const img = el.querySelector('img');
+  if (img) schedulePreviewFit(img, relPath);
 }
 
 function bindAlphaFit(img: HTMLImageElement, relPath: string): void {
@@ -41,22 +43,66 @@ function applyAlphaFit(img: HTMLImageElement, relPath: string): void {
       img.src = hudUrl;
       return;
     }
-    img.classList.remove('alpha-fit');
-    return;
+    img.dataset.trimmed = '1';
   }
-  const displayUrl = getDisplayUrl(relPath);
-  if (displayUrl && img.getAttribute('src') !== displayUrl) {
-    img.addEventListener('load', () => applyAlphaFit(img, relPath), { once: true });
-    img.src = displayUrl;
-    return;
+  img.classList.remove('alpha-fit');
+  schedulePreviewFit(img, relPath);
+}
+
+function visibleSizeForPreview(img: HTMLImageElement, relPath: string): { w: number; h: number } {
+  const opaque = getOpaqueBounds(relPath);
+  if (img.dataset.trimmed === '1' && img.naturalWidth > 0 && img.naturalHeight > 0) {
+    return { w: img.naturalWidth, h: img.naturalHeight };
   }
-  const bounds = rememberVisibleBounds(relPath, img);
-  if (!bounds || img.naturalWidth < 1) return;
-  const inset = trimInsets(bounds, img.naturalWidth, img.naturalHeight);
-  img.style.setProperty('--trim-top', `${inset.top * 100}%`);
-  img.style.setProperty('--trim-right', `${inset.right * 100}%`);
-  img.style.setProperty('--trim-bottom', `${inset.bottom * 100}%`);
-  img.style.setProperty('--trim-left', `${inset.left * 100}%`);
-  img.style.setProperty('--trim-scale', String(inset.scale));
-  img.classList.add('alpha-fit');
+  if (opaque && opaque.w > 0 && opaque.h > 0) return { w: opaque.w, h: opaque.h };
+  if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+    return { w: img.naturalWidth, h: img.naturalHeight };
+  }
+  return { w: 1, h: 1 };
+}
+
+/** Size a HUD sprite with contain-fit against its actual slot, not gameplay radius. */
+export function fitPreviewImage(img: HTMLImageElement, relPath: string): void {
+  const slot = img.parentElement;
+  if (!slot) return;
+  const availableWidth = slot.clientWidth;
+  const availableHeight = slot.clientHeight;
+  if (availableWidth < 1 || availableHeight < 1) return;
+  const visible = visibleSizeForPreview(img, relPath);
+  const dest = containPreviewRect(availableWidth, availableHeight, visible.w, visible.h);
+  img.style.width = `${dest.w}px`;
+  img.style.height = `${dest.h}px`;
+  img.style.maxWidth = 'none';
+  img.style.maxHeight = 'none';
+}
+
+function schedulePreviewFit(img: HTMLImageElement, relPath: string): void {
+  const run = () => fitPreviewImage(img, relPath);
+  if (img.parentElement) {
+    run();
+    observePreviewSlot(img.parentElement, img, relPath);
+  } else if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => {
+      run();
+      if (img.parentElement) observePreviewSlot(img.parentElement, img, relPath);
+    });
+  }
+}
+
+let previewObserver: ResizeObserver | null = null;
+const observedSlots = new WeakMap<Element, { img: HTMLImageElement; relPath: string }>();
+
+function observePreviewSlot(slot: HTMLElement, img: HTMLImageElement, relPath: string): void {
+  if (typeof ResizeObserver === 'undefined') return;
+  observedSlots.set(slot, { img, relPath });
+  if (!previewObserver) {
+    previewObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const tracked = observedSlots.get(entry.target);
+        if (!tracked) continue;
+        fitPreviewImage(tracked.img, tracked.relPath);
+      }
+    });
+  }
+  previewObserver.observe(slot);
 }

@@ -99,6 +99,38 @@ export function opaqueBoundsFromRgba(
 
 export type SpriteFit = 'max' | 'min';
 
+/** Safety inset so HUD previews keep a small margin inside their slot. */
+export const PREVIEW_SAFETY = 0.9;
+
+/**
+ * Contain a visible/trimmed sprite in a HUD slot.
+ * Uses the slot's actual inner size — TOP, NEXT and THEN can differ.
+ * Does not use gameplay radius.
+ */
+export function containPreviewRect(
+  availableWidth: number,
+  availableHeight: number,
+  visibleWidth: number,
+  visibleHeight: number,
+  safety = PREVIEW_SAFETY,
+): DestRect {
+  const boxW = Math.max(0, availableWidth);
+  const boxH = Math.max(0, availableHeight);
+  if (boxW <= 0 || boxH <= 0) return { x: 0, y: 0, w: 0, h: 0 };
+  const factor = Math.min(1, Math.max(0, safety));
+  const vw = visibleWidth > 0 ? visibleWidth : 1;
+  const vh = visibleHeight > 0 ? visibleHeight : 1;
+  const scale = Math.min(boxW / vw, boxH / vh) * factor;
+  const w = vw * scale;
+  const h = vh * scale;
+  return {
+    x: (boxW - w) / 2,
+    y: (boxH - h) / 2,
+    w,
+    h,
+  };
+}
+
 /**
  * Map visible artwork into the physics diameter.
  * `max` fits the longest visible side (round/tall sprites).
