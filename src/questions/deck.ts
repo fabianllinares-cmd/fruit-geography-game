@@ -1,5 +1,7 @@
+import { getLocale } from '../i18n';
 import { CLASSIC_QUESTIONS } from './classic';
 import { DRINKS_QUESTIONS } from './drinks';
+import { localizeQuestion } from './localize';
 import { NIGHT_QUESTIONS } from './night';
 import { SPORTS_QUESTIONS } from './sports';
 import { TROPICAL_QUESTIONS } from './tropical';
@@ -62,9 +64,19 @@ export class QuestionDeck {
     const question = pile.splice(index, 1)[0];
     this.recent.push(question.id);
     if (this.recent.length > 8) this.recent.shift();
+    const localized = localizeQuestion(question, getLocale());
     return {
-      ...question,
-      shuffled: shuffle([...question.choices], this.random),
+      ...localized,
+      shuffled: shuffle([...localized.choices], this.random),
+    };
+  }
+
+  /** Re-present a drawn question in the current language, keeping the same id. */
+  present(question: Question): PresentedQuestion {
+    const localized = localizeQuestion(question, getLocale());
+    return {
+      ...localized,
+      shuffled: shuffle([...localized.choices], this.random),
     };
   }
 

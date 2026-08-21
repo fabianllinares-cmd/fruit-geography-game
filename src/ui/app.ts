@@ -9,6 +9,7 @@ import {
   QuestionDeck,
   isCorrect,
   questionCount,
+  questionById,
   questionsFor,
   difficultyFor,
   type PresentedQuestion,
@@ -23,14 +24,37 @@ import {
   saveGame,
   saveLastTheme,
   saveSoundEnabled,
+  loadLanguage,
+  saveLanguage,
 } from '../persistence';
 import { applyThemeVars, getTheme, themeLogoObject, THEMES, type Theme } from '../themes';
+import {
+  applyDomI18n,
+  initLocale,
+  objectName,
+  quizSubject,
+  quizSubjectKey,
+  t,
+  themeName,
+  themeTagline,
+  getLocale,
+  setLocale,
+  LOCALE_LABELS,
+  LOCALES,
+  type Locale,
+  type MessageKey,
+} from '../i18n';
 import type { PowerUpId } from '../game/types';
 
-const POWERUPS: Array<{ id: PowerUpId; effect: 'globe' | 'bubbles' | 'target'; name: string; hint: string }> = [
-  { id: 'earthquake', effect: 'globe', name: 'Shake', hint: 'Jostle the pile' },
-  { id: 'remove-small', effect: 'bubbles', name: 'Sweep', hint: 'Clear levels 1–3' },
-  { id: 'target-remove', effect: 'target', name: 'Target', hint: 'Pick one to remove' },
+const POWERUPS: Array<{
+  id: PowerUpId;
+  effect: 'globe' | 'bubbles' | 'target';
+  nameKey: MessageKey;
+  hintKey: MessageKey;
+}> = [
+  { id: 'earthquake', effect: 'globe', nameKey: 'powerup.shake', hintKey: 'powerup.shakeHint' },
+  { id: 'remove-small', effect: 'bubbles', nameKey: 'powerup.sweep', hintKey: 'powerup.sweepHint' },
+  { id: 'target-remove', effect: 'target', nameKey: 'powerup.target', hintKey: 'powerup.targetHint' },
 ];
 
 export class App {
@@ -45,10 +69,18 @@ export class App {
   private lastTs = 0;
   private persistTimer = 0;
   private started = false;
+  private overlayMode: 'theme' | 'menu' | 'continue' | 'help' | 'question' | 'gameover' | 'confirm-theme' | null =
+    null;
+  private overlayCancellable = false;
+  private overlayQuestion: PresentedQuestion | null = null;
+  private overlayGameOver: { score: number; highest: number; correct: number; asked: number } | null = null;
+  private overlayContinue: { themeId: string; score: number } | null = null;
+  private refreshingOverlay = false;
 
   constructor() {
     const canvas = document.getElementById('board') as HTMLCanvasElement;
     this.overlays = document.getElementById('overlays')!;
+    initLocale(loadLanguage());
     this.theme = getTheme(loadLastTheme());
     this.engine = new MergeEngine();
     this.engine.setThemeId(this.theme.id);
@@ -56,18 +88,78 @@ export class App {
     audio.setEnabled(loadSoundEnabled());
     this._bindEngine();
     this._bindUi();
-    this._renderPowerups();
-    this._mountChromeIcons();
     applyThemeVars(this.theme);
-    this._syncHud();
+    this._applyChrome();
     this.renderer.resize();
     void preloadAssets();
+  }
+
+  private _applyChrome(): void {
+    applyDomI18n();
+    document.title = t('app.title');
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('app.description'));
+    this._mountChromeIcons();
+    this._renderPowerups();
+    this._syncHud();
+  }
+
+  private _setLocale(locale: Locale): void {
+    if (getLocale() === locale) return;
+    setLocale(locale);
+    saveLanguage(locale);
+    this._applyChrome();
+    this._refreshOverlay();
+  }
+
+  private _refreshOverlay(): void {
+    this.refreshingOverlay = true;
+    try {
+      switch (this.overlayMode) {
+        case 'menu':
+          this._showMenu();
+          break;
+        case 'help':
+          this._showHelp();
+          break;
+        case 'theme':
+          this._showThemes(this.overlayCancellable);
+          break;
+        case 'confirm-theme':
+          this._confirmThemeSwitch();
+          break;
+        case 'continue':
+          if (this.overlayContinue) {
+            this._showContinue(this.overlayContinue.themeId, this.overlayContinue.score);
+          }
+          break;
+        case 'question':
+          if (this.overlayQuestion) {
+            const fresh = questionById(this.overlayQuestion.id, this.theme.id);
+            this._showQuestion(fresh ? this.deck.present(fresh) : this.overlayQuestion);
+          }
+          break;
+        case 'gameover':
+          if (this.overlayGameOver) {
+            this._showGameOver(
+              this.overlayGameOver.score,
+              this.overlayGameOver.highest,
+              this.overlayGameOver.correct,
+              this.overlayGameOver.asked,
+            );
+          }
+          break;
+        default:
+          break;
+      }
+    } finally {
+      this.refreshingOverlay = false;
+    }
   }
 
   private _mountChromeIcons(): void {
     const menu = document.getElementById('menu-btn');
     if (menu && !menu.querySelector('img')) {
-      menu.append(spriteImg(buttonPath('menu'), 'Menu', 'ui-icon'));
+      menu.append(spriteImg(buttonPath('menu'), t('hud.menu'), 'ui-icon'));
     }
     setSprite(document.getElementById('energy-icon'), effectPath('energy'), '', 'ui-icon energy-bolt');
     const targetLabel = document.querySelector('#target-banner span');
@@ -102,7 +194,7 @@ export class App {
           void document.getElementById('score')!.offsetWidth;
         }
         const def = this.theme.objects[this.engine.highestLevel];
-        if (def) setSprite(document.getElementById('highest-emoji'), def.visual.sprite, def.name);
+        if (def) setSprite(document.getElementById('highest-emoji'), def.visual.sprite, objectName(def.id, def.name));
         void level;
       },
       onMerge: (level, x, y, chain) => {
@@ -201,9 +293,9 @@ export class App {
       btn.dataset.id = p.id;
       const name = document.createElement('span');
       name.className = 'powerup-name';
-      name.textContent = p.name;
+      name.textContent = t(p.nameKey);
       btn.append(spriteImg(effectPath(p.effect), '', 'powerup-icon'), name);
-      btn.title = p.hint;
+      btn.title = t(p.hintKey);
       btn.addEventListener('click', () => this._requestPower(p.id));
       row.appendChild(btn);
     }
@@ -266,12 +358,13 @@ export class App {
 
   private _syncHud(): void {
     const logo = themeLogoObject(this.theme);
-    setSprite(document.getElementById('theme-emoji'), logo.visual.sprite, this.theme.shortName);
-    document.getElementById('theme-name')!.textContent = this.theme.shortName;
+    const themeLabel = themeName(this.theme.id);
+    setSprite(document.getElementById('theme-emoji'), logo.visual.sprite, themeLabel);
+    document.getElementById('theme-name')!.textContent = themeLabel;
     document.getElementById('score')!.textContent = String(this.engine.score);
     document.getElementById('best')!.textContent = String(getBest(this.theme.id));
     const top = this.theme.objects[this.engine.highestLevel] ?? this.theme.objects[0];
-    setSprite(document.getElementById('highest-emoji'), top.visual.sprite, top.name);
+    setSprite(document.getElementById('highest-emoji'), top.visual.sprite, objectName(top.id, top.name));
     this._syncNext(this.engine.currentLevel, this.engine.nextLevel);
     this._syncEnergy(this.engine.charge.energy, this.engine.charge.isReady(this.engine.challengeThreshold));
   }
@@ -280,23 +373,21 @@ export class App {
     const now = this.theme.objects[current];
     const then = this.theme.objects[next];
     if (now) {
-      setSprite(document.getElementById('now-emoji'), now.visual.sprite, now.name);
-      document.getElementById('now-name')!.textContent = now.name;
+      setSprite(document.getElementById('now-emoji'), now.visual.sprite, objectName(now.id, now.name));
+      document.getElementById('now-name')!.textContent = objectName(now.id, now.name);
     }
-    if (then) setSprite(document.getElementById('then-emoji'), then.visual.sprite, then.name);
+    if (then) setSprite(document.getElementById('then-emoji'), then.visual.sprite, objectName(then.id, then.name));
   }
 
   private _syncEnergy(energy: number, ready: boolean): void {
     const fill = document.getElementById('energy-fill')!;
     fill.style.width = `${energy}%`;
     const status = document.getElementById('energy-status')!;
-    status.textContent = ready ? 'Challenge ready!' : 'Merges charge a quiz';
-    const label = document.querySelector('.energy-label');
-    if (label) {
-      const subject = quizSubject(this.theme.id);
-      const text = label.childNodes[label.childNodes.length - 1];
-      if (text && text.nodeType === Node.TEXT_NODE) text.textContent = ` ${subject} energy`;
-    }
+    status.textContent = ready ? t('hud.challengeReady') : t('hud.mergesCharge');
+    const subject = document.getElementById('energy-subject');
+    if (subject) subject.textContent = t(`quiz.energy.${quizSubjectKey(this.theme.id)}`);
+    const energyBar = document.querySelector('.energy-bar');
+    if (energyBar) energyBar.setAttribute('aria-label', t(`quiz.energy.${quizSubjectKey(this.theme.id)}`));
     document.querySelector('.energy')!.classList.toggle('ready', ready);
     for (const btn of document.querySelectorAll<HTMLButtonElement>('.powerup')) {
       btn.classList.toggle('ready', ready);
@@ -306,6 +397,10 @@ export class App {
 
   private _clearOverlays(): void {
     this.overlays.innerHTML = '';
+    this.overlayMode = null;
+    this.overlayQuestion = null;
+    this.overlayGameOver = null;
+    this.overlayContinue = null;
     this.engine.removePause('theme');
     this.engine.removePause('menu');
     this.engine.removePause('continue');
@@ -316,6 +411,7 @@ export class App {
 
   private _card(html: string, reason: 'theme' | 'menu' | 'continue' | 'help' | 'question' | 'gameover'): HTMLElement {
     this.overlays.innerHTML = '';
+    this.overlayMode = reason;
     this.engine.addPause(reason);
     const overlay = document.createElement('div');
     overlay.className = 'overlay';
@@ -325,12 +421,13 @@ export class App {
   }
 
   private _showThemes(cancellable: boolean): void {
-    if (!cancellable) audio.stopMusic();
+    this.overlayCancellable = cancellable;
+    if (!cancellable && !this.refreshingOverlay) audio.stopMusic();
     const overlay = this._card(
-      `<h2 class="card-title"><img class="ui-icon title-icon" alt="" src="${assetUrl(effectPath('map'))}"> Choose your game</h2>
-       <p>Same physics. New look. A correct quiz answer unlocks the power-ups.</p>
+      `<h2 class="card-title"><img class="ui-icon title-icon" alt="" src="${assetUrl(effectPath('map'))}"> ${escapeHtml(t('theme.chooseTitle'))}</h2>
+       <p>${escapeHtml(t('theme.chooseBlurb'))}</p>
        <div class="theme-grid" id="theme-grid"></div>
-       ${cancellable ? '<button type="button" class="btn btn-ghost" data-act="close">Keep playing</button>' : ''}`,
+       ${cancellable ? `<button type="button" class="btn btn-ghost" data-act="close">${escapeHtml(t('theme.keepPlaying'))}</button>` : ''}`,
       'theme',
     );
     const grid = overlay.querySelector('#theme-grid')!;
@@ -339,13 +436,17 @@ export class App {
       btn.type = 'button';
       btn.className = 'theme-card';
       const logo = themeLogoObject(theme);
-      const preview = spriteImg(logo.visual.sprite, logo.name, 'te');
+      const preview = spriteImg(logo.visual.sprite, objectName(logo.id, logo.name), 'te');
       if (theme.id === 'night') preview.classList.add('night-glow');
       const slot = document.createElement('span');
       slot.className = 'sprite-slot te-slot';
       slot.append(preview);
       const copy = document.createElement('div');
-      copy.innerHTML = `<b>${theme.name}</b><span>${theme.tagline}</span>`;
+      const name = document.createElement('b');
+      name.textContent = themeName(theme.id, true);
+      const tag = document.createElement('span');
+      tag.textContent = themeTagline(theme.id);
+      copy.append(name, tag);
       btn.append(slot, copy);
       btn.addEventListener('click', () => this._selectTheme(theme, true));
       grid.appendChild(btn);
@@ -355,14 +456,15 @@ export class App {
 
   private _confirmThemeSwitch(): void {
     const overlay = this._card(
-      `<h2>Switch theme?</h2>
-       <p>This ends the current run. Best scores are kept per theme.</p>
+      `<h2>${escapeHtml(t('theme.switchTitle'))}</h2>
+       <p>${escapeHtml(t('theme.switchBlurb'))}</p>
        <div class="btn-row">
-         <button type="button" class="btn btn-primary" data-act="yes">Change theme</button>
-         <button type="button" class="btn btn-ghost" data-act="no">Cancel</button>
+         <button type="button" class="btn btn-primary" data-act="yes">${escapeHtml(t('theme.change'))}</button>
+         <button type="button" class="btn btn-ghost" data-act="no">${escapeHtml(t('theme.cancel'))}</button>
        </div>`,
       'theme',
     );
+    this.overlayMode = 'confirm-theme';
     overlay.querySelector('[data-act="yes"]')?.addEventListener('click', () => this._showThemes(true));
     overlay.querySelector('[data-act="no"]')?.addEventListener('click', () => this._clearOverlays());
   }
@@ -383,13 +485,14 @@ export class App {
   }
 
   private _showContinue(themeId: string, score: number): void {
+    this.overlayContinue = { themeId, score };
     const theme = getTheme(themeId);
     const overlay = this._card(
-      `<h2>Welcome back</h2>
-       <p class="resume-line"><img class="sprite resume-sprite" alt="" src="${assetUrl(themeLogoObject(theme).visual.sprite)}"> Resume ${theme.name} at ${score} points?</p>
+      `<h2>${escapeHtml(t('game.welcomeBack'))}</h2>
+       <p class="resume-line"><img class="sprite resume-sprite" alt="" src="${assetUrl(themeLogoObject(theme).visual.sprite)}"> ${escapeHtml(t('game.resumeAt', { theme: themeName(theme.id, true), score }))}</p>
        <div class="btn-row">
-         <button type="button" class="btn btn-primary btn-with-icon" data-act="continue"><img class="ui-icon" alt="" src="${assetUrl(buttonPath('play'))}"> Continue game</button>
-         <button type="button" class="btn btn-ghost" data-act="new">New game</button>
+         <button type="button" class="btn btn-primary btn-with-icon" data-act="continue"><img class="ui-icon" alt="" src="${assetUrl(buttonPath('play'))}"> ${escapeHtml(t('game.continue'))}</button>
+         <button type="button" class="btn btn-ghost" data-act="new">${escapeHtml(t('game.newGame'))}</button>
        </div>`,
       'continue',
     );
@@ -411,8 +514,9 @@ export class App {
   }
 
   private _showQuestion(question: PresentedQuestion): void {
+    this.overlayQuestion = question;
     const overlay = this._card(
-      `<p class="muted quiz-kicker"><img class="ui-icon title-icon" alt="" src="${assetUrl(effectPath('quiz'))}"> ${question.category}</p>
+      `<p class="muted quiz-kicker"><img class="ui-icon title-icon" alt="" src="${assetUrl(effectPath('quiz'))}"> ${escapeHtml(question.category)}</p>
        <h2>${escapeHtml(question.prompt)}</h2>
        <div class="answers"></div>`,
       'question',
@@ -440,7 +544,7 @@ export class App {
     const note = document.createElement('div');
     note.className = 'feedback';
     if (correct) {
-      note.textContent = '✓ Correct!';
+      note.textContent = t('question.correct');
       audio.correct();
       if (question.fact) {
         const fact = document.createElement('p');
@@ -452,11 +556,11 @@ export class App {
         card.appendChild(note);
       }
     } else {
-      note.textContent = '✗ Not quite.';
+      note.textContent = t('question.wrong');
       audio.incorrect();
       const ans = document.createElement('p');
       ans.className = 'muted';
-      ans.textContent = `Correct answer: ${question.correct}`;
+      ans.textContent = t('question.correctAnswer', { answer: question.correct });
       card.appendChild(note);
       card.appendChild(ans);
     }
@@ -471,20 +575,21 @@ export class App {
   }
 
   private _showGameOver(score: number, highest: number, correct: number, asked: number): void {
-    audio.pauseMusic();
+    this.overlayGameOver = { score, highest, correct, asked };
+    if (!this.refreshingOverlay) audio.pauseMusic();
     const def = this.theme.objects[highest];
     const accuracy = asked ? `${correct} / ${asked}` : '—';
     const overlay = this._card(
-      `<h2>Game over</h2>
+      `<h2>${escapeHtml(t('game.gameOver'))}</h2>
        <div class="stats-grid">
-         <div><span class="muted">Score</span><b>${score}</b></div>
-         <div><span class="muted">Best</span><b>${getBest(this.theme.id)}</b></div>
-         <div><span class="muted">Highest</span><b class="highest-stat"><img class="sprite" alt="" src="${assetUrl(def?.visual.sprite ?? this.theme.objects[0].visual.sprite)}"> ${def?.name ?? ''}</b></div>
-         <div><span class="muted">${quizSubject(this.theme.id)}</span><b>${accuracy}</b></div>
+         <div><span class="muted">${escapeHtml(t('hud.score'))}</span><b>${score}</b></div>
+         <div><span class="muted">${escapeHtml(t('hud.best'))}</span><b>${getBest(this.theme.id)}</b></div>
+         <div><span class="muted">${escapeHtml(t('game.highest'))}</span><b class="highest-stat"><img class="sprite" alt="" src="${assetUrl(def?.visual.sprite ?? this.theme.objects[0].visual.sprite)}"> ${escapeHtml(def ? objectName(def.id, def.name) : '')}</b></div>
+         <div><span class="muted">${escapeHtml(quizSubject(this.theme.id))}</span><b>${accuracy}</b></div>
        </div>
        <div class="btn-row">
-         <button type="button" class="btn btn-primary btn-with-icon" data-act="again"><img class="ui-icon" alt="" src="${assetUrl(buttonPath('play'))}"> Play again</button>
-         <button type="button" class="btn btn-ghost" data-act="theme">Change theme</button>
+         <button type="button" class="btn btn-primary btn-with-icon" data-act="again"><img class="ui-icon" alt="" src="${assetUrl(buttonPath('play'))}"> ${escapeHtml(t('game.playAgain'))}</button>
+         <button type="button" class="btn btn-ghost" data-act="theme">${escapeHtml(t('game.changeTheme'))}</button>
        </div>`,
       'gameover',
     );
@@ -500,30 +605,44 @@ export class App {
 
   private _showMenu(): void {
     const asked = this.engine.geoAsked;
+    const locale = getLocale();
+    const langButtons = LOCALES.map(
+      (code) =>
+        `<button type="button" class="lang-btn${code === locale ? ' active' : ''}" data-lang="${code}">${escapeHtml(LOCALE_LABELS[code])}</button>`,
+    ).join('');
     const overlay = this._card(
-      `<h2>Fruit Geography</h2>
-       <p>Drag to aim, release to drop. Match two of the same to merge. Fill quiz energy, then answer a question to use a power-up.</p>
-       <p class="muted">Questions this run: ${this.engine.geoCorrect} / ${asked || 0} · Bank: ${questionCount(this.theme.id)}</p>
+      `<h2>${escapeHtml(t('menu.title'))}</h2>
+       <p>${escapeHtml(t('menu.blurb'))}</p>
+       <p class="muted">${escapeHtml(t('menu.questionsThisRun', { correct: this.engine.geoCorrect, asked: asked || 0, bank: questionCount(this.theme.id) }))}</p>
        <div class="sound-row">
-         <span>Sound</span>
-         <button type="button" class="icon-btn sound-btn" data-act="sound" aria-label="${audio.enabled ? 'Mute sound' : 'Unmute sound'}">
+         <span>${escapeHtml(t('menu.sound'))}</span>
+         <button type="button" class="icon-btn sound-btn" data-act="sound" aria-label="${escapeHtml(audio.enabled ? t('menu.mute') : t('menu.unmute'))}">
            <img class="ui-icon" alt="" src="${assetUrl(buttonPath(audio.enabled ? 'sound_on' : 'sound_off'))}">
          </button>
        </div>
+       <div class="lang-row">
+         <span>${escapeHtml(t('menu.language'))}</span>
+         <div class="lang-options">${langButtons}</div>
+       </div>
        <div class="btn-row">
-         <button type="button" class="btn btn-primary" data-act="close">Back</button>
-         <button type="button" class="btn btn-ghost" data-act="new">New game</button>
+         <button type="button" class="btn btn-primary" data-act="close">${escapeHtml(t('menu.resume'))}</button>
+         <button type="button" class="btn btn-ghost" data-act="help">${escapeHtml(t('menu.help'))}</button>
+         <button type="button" class="btn btn-ghost" data-act="new">${escapeHtml(t('menu.restart'))}</button>
        </div>`,
       'menu',
     );
     overlay.querySelector('[data-act="sound"]')?.addEventListener('click', (e) => {
       this._toggleSound();
       const btn = e.currentTarget as HTMLButtonElement;
-      btn.setAttribute('aria-label', audio.enabled ? 'Mute sound' : 'Unmute sound');
+      btn.setAttribute('aria-label', audio.enabled ? t('menu.mute') : t('menu.unmute'));
       const img = btn.querySelector('img');
       if (img) img.src = assetUrl(buttonPath(audio.enabled ? 'sound_on' : 'sound_off'));
     });
+    for (const btn of overlay.querySelectorAll<HTMLButtonElement>('[data-lang]')) {
+      btn.addEventListener('click', () => this._setLocale(btn.dataset.lang as Locale));
+    }
     overlay.querySelector('[data-act="close"]')?.addEventListener('click', () => this._clearOverlays());
+    overlay.querySelector('[data-act="help"]')?.addEventListener('click', () => this._showHelp());
     overlay.querySelector('[data-act="new"]')?.addEventListener('click', () => {
       this.engine.removePause('gameover');
       this.engine.reset(this.theme.id);
@@ -532,6 +651,18 @@ export class App {
       this._syncHud();
       audio.syncThemeMusic(this.theme.id, true, true);
     });
+  }
+
+  private _showHelp(): void {
+    const overlay = this._card(
+      `<h2>${escapeHtml(t('help.title'))}</h2>
+       <p>${escapeHtml(t('help.body'))}</p>
+       <div class="btn-row">
+         <button type="button" class="btn btn-primary" data-act="back">${escapeHtml(t('menu.back'))}</button>
+       </div>`,
+      'help',
+    );
+    overlay.querySelector('[data-act="back"]')?.addEventListener('click', () => this._showMenu());
   }
 
   private _toggleSound(): void {
@@ -580,14 +711,10 @@ export class App {
       deck: this.deck,
       questions: questionsFor(this.theme.id),
       dangerHoldMs: DANGER_HOLD_MS,
+      locale: () => getLocale(),
+      setLocale: (locale: Locale) => this._setLocale(locale),
     };
   }
-}
-
-function quizSubject(themeId: string): string {
-  if (themeId === 'sports') return 'Math';
-  if (themeId === 'night') return 'Space';
-  return 'Geography';
 }
 
 function escapeHtml(text: string): string {

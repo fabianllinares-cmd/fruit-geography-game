@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { initLocale } from '../src/i18n';
 import { isCorrect, QuestionDeck } from '../src/questions/deck';
 import {
   CLASSIC_QUESTIONS,
@@ -73,6 +74,8 @@ describe('theme question banks', () => {
 });
 
 describe('question selection and answers', () => {
+  beforeEach(() => initLocale('en'));
+
   it('randomizes order and avoids immediate repeats until the deck is exhausted', () => {
     let seq = 0;
     const deck = new QuestionDeck(() => {
