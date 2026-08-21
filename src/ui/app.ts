@@ -103,6 +103,7 @@ export class App {
     this._syncHud();
   }
 
+  /** Relocalize chrome/overlays only. Language must never restart or retarget music. */
   private _setLocale(locale: Locale): void {
     if (getLocale() === locale) return;
     setLocale(locale);
