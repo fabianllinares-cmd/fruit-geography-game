@@ -1,4 +1,5 @@
 import { assetUrl, backgroundPath, type ThemeId } from '../assets/catalog';
+import { t, themeName } from '../i18n';
 import type { ObjectDef, Theme } from './types';
 
 export type { Theme, ObjectDef, VisualSpec } from './types';
@@ -42,6 +43,6 @@ export function applyThemeVars(theme: Theme, root: HTMLElement = document.docume
   const bg = document.getElementById('board-bg') as HTMLImageElement | null;
   if (bg) {
     bg.src = assetUrl(backgroundPath(theme.id as ThemeId));
-    bg.alt = `${theme.name} background`;
+    bg.alt = t('theme.backgroundAlt', { name: themeName(theme.id) });
   }
 }

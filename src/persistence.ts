@@ -1,4 +1,5 @@
 import type { SavedGame } from './game/types';
+import { isLocale, type Locale } from './i18n/types';
 
 const PREFIX = 'fruit-geo-v1';
 
@@ -7,6 +8,7 @@ export const KEYS = {
   lastTheme: `${PREFIX}-last-theme`,
   save: `${PREFIX}-save`,
   sound: `${PREFIX}-sound`,
+  language: `${PREFIX}-language`,
 } as const;
 
 export type BestScores = Record<string, number>;
@@ -58,6 +60,15 @@ export function loadSoundEnabled(): boolean {
 
 export function saveSoundEnabled(on: boolean): void {
   storage()?.setItem(KEYS.sound, on ? 'on' : 'off');
+}
+
+export function loadLanguage(): Locale {
+  const raw = storage()?.getItem(KEYS.language);
+  return isLocale(raw) ? raw : 'en';
+}
+
+export function saveLanguage(locale: Locale): void {
+  storage()?.setItem(KEYS.language, locale);
 }
 
 export function loadGame(): SavedGame | null {

@@ -24,7 +24,7 @@ async function tapTheme(name) {
 }
 
 if (await page.locator('.theme-grid').count()) {
-  await tapTheme('Fruit Classic');
+  await tapTheme('Classic');
 }
 
 const box = await page.locator('#board').boundingBox();
