@@ -8,7 +8,15 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false,
-      includeAssets: ['icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'assets/audio/bonsai-master.mp3'],
+      includeAssets: [
+        'icons/icon.svg',
+        'icons/icon-192.png',
+        'icons/icon-512.png',
+        'assets/audio/fruit-merge.mp3',
+        'assets/audio/fruitful-vibes.mp3',
+        'assets/audio/bonsai-master.mp3',
+        'assets/audio/champions-are-made.mp3',
+      ],
       manifest: {
         name: 'Fruit Geography Game',
         short_name: 'Fruit Geo',

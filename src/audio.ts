@@ -1,21 +1,40 @@
-import { assetUrl } from './assets/catalog';
+import { assetUrl, type ThemeId } from './assets/catalog';
 
-const TROPICAL_MUSIC_SRC = 'assets/audio/bonsai-master.mp3';
 const MUSIC_VOLUME = 0.32;
-/** Tropical BGM plays through once per run; it must not loop. */
-export const TROPICAL_MUSIC_LOOP = false;
+
+/** Theme gameplay tracks. `null` means silence (no soundtrack). */
+export const THEME_MUSIC = {
+  classic: 'assets/audio/fruit-merge.mp3',
+  night: 'assets/audio/fruitful-vibes.mp3',
+  tropical: 'assets/audio/bonsai-master.mp3',
+  sports: 'assets/audio/champions-are-made.mp3',
+  drinks: null,
+} as const satisfies Record<ThemeId, string | null>;
+
+/** Theme BGM plays through once per run; it must not loop. */
+export const THEME_MUSIC_LOOP = false;
+
+export function themeMusicSrc(themeId: string): string | null {
+  if (themeId in THEME_MUSIC) return THEME_MUSIC[themeId as ThemeId];
+  return null;
+}
+
+export function allThemeMusicPaths(): string[] {
+  return Object.values(THEME_MUSIC).filter((src): src is string => Boolean(src));
+}
 
 export class AudioBus {
   enabled = true;
   private ctx: AudioContext | null = null;
   private music: HTMLAudioElement | null = null;
   private musicTheme: string | null = null;
-  private wantTropical = false;
+  private loadedSrc: string | null = null;
+  private wantMusic = false;
 
   setEnabled(on: boolean): void {
     this.enabled = on;
     if (!on) this.pauseMusic();
-    else if (this.wantTropical) this.playTropicalMusic();
+    else this.resumeMusicIfNeeded();
   }
 
   private ensure(): AudioContext | null {
@@ -79,15 +98,32 @@ export class AudioBus {
     }
   }
 
-  /** Start or resume the single Tropical gameplay track. Call from a user gesture. */
-  playTropicalMusic(restart = false): void {
-    this.wantTropical = true;
-    if (!this.enabled || typeof Audio === 'undefined') return;
+  /** Start or resume the single gameplay track for `themeId`. Call from a user gesture. */
+  playThemeMusic(themeId: string, restart = false): void {
+    const rel = themeMusicSrc(themeId);
+    if (!rel) {
+      this.stopMusic();
+      return;
+    }
+    this.wantMusic = true;
+    this.musicTheme = themeId;
+    if (typeof Audio === 'undefined') return;
     const el = this._musicEl();
-    this.musicTheme = 'tropical';
-    if (restart) el.currentTime = 0;
-    if (this._trackEnded(el) && !restart) return;
-    if (el.paused || restart) {
+    el.loop = THEME_MUSIC_LOOP;
+    const url = assetUrl(rel);
+    const switched = this.loadedSrc !== url;
+    if (switched) {
+      el.pause();
+      el.src = url;
+      this.loadedSrc = url;
+      el.loop = THEME_MUSIC_LOOP;
+      el.currentTime = 0;
+    } else if (restart) {
+      el.currentTime = 0;
+    }
+    if (!this.enabled) return;
+    if (this._trackEnded(el) && !restart && !switched) return;
+    if (el.paused || restart || switched) {
       void el.play().catch(() => {
         /* autoplay may still be blocked; a later gesture retries */
       });
@@ -95,8 +131,9 @@ export class AudioBus {
   }
 
   stopMusic(): void {
-    this.wantTropical = false;
+    this.wantMusic = false;
     this.musicTheme = null;
+    this.loadedSrc = null;
     if (!this.music) return;
     this.music.pause();
     this.music.currentTime = 0;
@@ -107,14 +144,45 @@ export class AudioBus {
   }
 
   resumeMusicIfNeeded(): void {
-    if (!this.wantTropical || !this.enabled) return;
+    if (!this.wantMusic || !this.enabled || !this.musicTheme) return;
     if (this.music && this._trackEnded(this.music)) return;
-    this.playTropicalMusic(false);
+    this.playThemeMusic(this.musicTheme, false);
   }
 
+  /**
+   * Align the singleton player with the active theme.
+   * `playing` is true once a game in that theme is actually starting/continuing.
+   */
   syncThemeMusic(themeId: string, playing: boolean, restart = false): void {
-    if (themeId === 'tropical' && playing) this.playTropicalMusic(restart);
-    else this.stopMusic();
+    if (!playing) {
+      this.stopMusic();
+      return;
+    }
+    this.playThemeMusic(themeId, restart);
+  }
+
+  /** Test/debug snapshot of the one managed player. */
+  musicState(): {
+    theme: string | null;
+    want: boolean;
+    src: string | null;
+    loop: boolean;
+    paused: boolean;
+    currentTime: number;
+    ended: boolean;
+    element: HTMLAudioElement | null;
+  } {
+    const el = this.music;
+    return {
+      theme: this.musicTheme,
+      want: this.wantMusic,
+      src: el?.src ?? this.loadedSrc,
+      loop: el?.loop ?? THEME_MUSIC_LOOP,
+      paused: el?.paused ?? true,
+      currentTime: el?.currentTime ?? 0,
+      ended: el ? this._trackEnded(el) : false,
+      element: el,
+    };
   }
 
   private _trackEnded(el: HTMLAudioElement): boolean {
@@ -124,8 +192,8 @@ export class AudioBus {
 
   private _musicEl(): HTMLAudioElement {
     if (this.music) return this.music;
-    const el = new Audio(assetUrl(TROPICAL_MUSIC_SRC));
-    el.loop = TROPICAL_MUSIC_LOOP;
+    const el = new Audio();
+    el.loop = THEME_MUSIC_LOOP;
     el.preload = 'auto';
     el.volume = MUSIC_VOLUME;
     el.addEventListener('ended', () => {

@@ -102,8 +102,30 @@ describe('production asset pack', () => {
     }
   });
 
-  it('includes Tropical gameplay music at a GitHub Pages-safe path', () => {
+  it('includes theme gameplay music at GitHub Pages-safe paths', () => {
+    expect(existsSync(publicFile('assets/audio/fruit-merge.mp3'))).toBe(true);
+    expect(existsSync(publicFile('assets/audio/fruitful-vibes.mp3'))).toBe(true);
     expect(existsSync(publicFile('assets/audio/bonsai-master.mp3'))).toBe(true);
+    expect(existsSync(publicFile('assets/audio/champions-are-made.mp3'))).toBe(true);
+    expect(existsSync(path.join(root, 'Champions Are Made.mp3'))).toBe(false);
+    expect(existsSync(path.join(root, 'Fruitful Vibes.mp3'))).toBe(false);
+    expect(existsSync(path.join(root, 'Fruit Merge.mp3'))).toBe(false);
+  });
+
+  it('lists every theme track in the PWA includeAssets list and no root MP3s', () => {
+    const config = readFileSync(path.join(root, 'vite.config.ts'), 'utf8');
+    for (const file of [
+      'assets/audio/fruit-merge.mp3',
+      'assets/audio/fruitful-vibes.mp3',
+      'assets/audio/bonsai-master.mp3',
+      'assets/audio/champions-are-made.mp3',
+    ]) {
+      expect(config).toContain(`'${file}'`);
+    }
+    expect(config).not.toContain('Champions Are Made.mp3');
+    expect(config).not.toContain('Fruitful Vibes.mp3');
+    expect(config).not.toContain('Fruit Merge.mp3');
+    expect(config).toContain("globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff2,mp3}']");
   });
 
   it('keeps mute inside the menu instead of the HUD', () => {
