@@ -77,8 +77,8 @@ describe('theme music mapping', () => {
     expect(THEME_MUSIC.drinks).toBeNull();
   });
 
-  it('does not loop any theme track', () => {
-    expect(THEME_MUSIC_LOOP).toBe(false);
+  it('loops theme tracks', () => {
+    expect(THEME_MUSIC_LOOP).toBe(true);
   });
 
   it('keeps all four tracks under public/assets/audio with web-safe names', () => {
@@ -118,11 +118,11 @@ describe('theme music player', () => {
     return FakeAudio.instances[0];
   }
 
-  it('plays the mapped track from the start on a new game and sets loop=false', () => {
+  it('plays the mapped track from the start on a new game and sets loop=true', () => {
     bus.syncThemeMusic('classic', true, true);
     const el = player();
     expect(el.src).toContain('fruit-merge.mp3');
-    expect(el.loop).toBe(false);
+    expect(el.loop).toBe(true);
     expect(el.paused).toBe(false);
     expect(el.currentTime).toBe(0);
   });
@@ -134,7 +134,7 @@ describe('theme music player', () => {
     expect(player().src).toContain('bonsai-master.mp3');
     bus.syncThemeMusic('sports', true, true);
     expect(player().src).toContain('champions-are-made.mp3');
-    expect(player().loop).toBe(false);
+    expect(player().loop).toBe(true);
     expect(FakeAudio.instances).toHaveLength(1);
   });
 
@@ -162,17 +162,15 @@ describe('theme music player', () => {
     expect(bus.musicState().theme).toBeNull();
   });
 
-  it('does not automatically restart a completed track', () => {
+  it('resumes near the loop boundary instead of treating the track as finished', () => {
     bus.syncThemeMusic('classic', true, true);
     const el = player();
-    el.finish();
-    expect(el.paused).toBe(true);
-    expect(el.ended).toBe(true);
-    bus.resumeMusicIfNeeded();
-    bus.syncThemeMusic('classic', true, false);
-    expect(el.ended).toBe(true);
-    expect(el.paused).toBe(true);
-    expect(el.currentTime).toBe(el.duration);
+    el.currentTime = el.duration - 0.02;
+    bus.setEnabled(false);
+    bus.setEnabled(true);
+    expect(el.loop).toBe(true);
+    expect(el.paused).toBe(false);
+    expect(el.currentTime).toBe(el.duration - 0.02);
     expect(FakeAudio.instances).toHaveLength(1);
   });
 
@@ -201,14 +199,15 @@ describe('theme music player', () => {
     expect(FakeAudio.instances).toHaveLength(1);
   });
 
-  it('does not restart a finished track when unmuting', () => {
+  it('can resume a player that reached its end when unmuting', () => {
     bus.syncThemeMusic('sports', true, true);
     const el = player();
     el.finish();
     bus.setEnabled(false);
     bus.setEnabled(true);
-    expect(el.ended).toBe(true);
-    expect(el.paused).toBe(true);
+    expect(el.ended).toBe(false);
+    expect(el.paused).toBe(false);
+    expect(el.currentTime).toBe(0);
     expect(FakeAudio.instances).toHaveLength(1);
   });
 

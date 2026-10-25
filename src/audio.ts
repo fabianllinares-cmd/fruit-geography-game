@@ -11,8 +11,8 @@ export const THEME_MUSIC = {
   drinks: null,
 } as const satisfies Record<ThemeId, string | null>;
 
-/** Theme BGM plays through once per run; it must not loop. */
-export const THEME_MUSIC_LOOP = false;
+/** Repeat the active theme soundtrack throughout gameplay. */
+export const THEME_MUSIC_LOOP = true;
 
 export function themeMusicSrc(themeId: string): string | null {
   if (themeId in THEME_MUSIC) return THEME_MUSIC[themeId as ThemeId];
@@ -122,7 +122,6 @@ export class AudioBus {
       el.currentTime = 0;
     }
     if (!this.enabled) return;
-    if (this._trackEnded(el) && !restart && !switched) return;
     if (el.paused || restart || switched) {
       void el.play().catch(() => {
         /* autoplay may still be blocked; a later gesture retries */
@@ -145,7 +144,6 @@ export class AudioBus {
 
   resumeMusicIfNeeded(): void {
     if (!this.wantMusic || !this.enabled || !this.musicTheme) return;
-    if (this.music && this._trackEnded(this.music)) return;
     this.playThemeMusic(this.musicTheme, false);
   }
 
@@ -196,10 +194,6 @@ export class AudioBus {
     el.loop = THEME_MUSIC_LOOP;
     el.preload = 'auto';
     el.volume = MUSIC_VOLUME;
-    el.addEventListener('ended', () => {
-      if (!this.music) return;
-      this.music.pause();
-    });
     this.music = el;
     return el;
   }
